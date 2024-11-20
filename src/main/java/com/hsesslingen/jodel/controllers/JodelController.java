@@ -5,6 +5,7 @@ import com.hsesslingen.jodel.repositories.JodelRepository;
 import com.hsesslingen.jodel.exceptions.EntityIdNotFoundException;
 import com.hsesslingen.jodel.services.BarbarianService;
 import com.hsesslingen.jodel.services.JodelService;
+import com.hsesslingen.jodel.services.PostService;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -23,6 +24,9 @@ public class JodelController {
     @Autowired
     private JodelService jodelService;
 
+    @Autowired
+    private PostService postService;
+
     @GetMapping
     public ResponseEntity<List<Jodel>> getAllJodels() {
         return ResponseEntity.ok(jodelRepository.findAll());
@@ -33,9 +37,23 @@ public class JodelController {
         return jodelRepository.findById(id).orElseThrow( () -> new EntityIdNotFoundException(id, "Comment"));
     }
 
-    @PostMapping
-    public ResponseEntity<Jodel> createJodel(@RequestBody Jodel jodel) {
+    @PostMapping("/post")
+    public ResponseEntity<Jodel> createJodelOnPost(@RequestBody Jodel jodel, @RequestParam long postId) {
+        Post targetPost = postService.getPostById(postId);
+
+        jodel.setPost(targetPost);
         Jodel savedJodel = jodelRepository.save(jodel);
+
+        return ResponseEntity.ok(savedJodel);
+    }
+
+    @PostMapping("/jodel")
+    public ResponseEntity<Jodel> createJodelOnJodel(@RequestBody Jodel jodel, @RequestParam long jodelId) {
+        Jodel targetJodel = jodelService.getJodelById(jodelId);
+
+        jodel.setParentJodel(targetJodel);
+        Jodel savedJodel = jodelRepository.save(jodel);
+
         return ResponseEntity.ok(savedJodel);
     }
 
