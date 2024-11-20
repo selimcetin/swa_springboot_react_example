@@ -30,10 +30,12 @@ public class PostController {
 
     @GetMapping
     public ResponseEntity<List<Post>> getAllPosts() {
+
+        List<Post> list = postRepository.findAll();
         return ResponseEntity.ok(postRepository.findAll());
     }
 
-    @GetMapping
+    @GetMapping("/radius")
     public ResponseEntity<List<Post>> getAllPostsWithinRadius(@RequestParam double longitude, @RequestParam double latitude, @RequestParam double radius) {
         return ResponseEntity.ok(postService.getPostsWithinRadius(longitude, latitude, radius));
     }
@@ -49,7 +51,7 @@ public class PostController {
         return ResponseEntity.ok(savedPost);
     }
 
-    @PostMapping("/{postId}{username}{voteType}")
+    @PostMapping("/vote")
     @Transactional
     public ResponseEntity<Void> votePost(@RequestParam long postId, @RequestParam String username, @RequestParam int voteType) {
         Post targetPost = postService.getPostById(postId);

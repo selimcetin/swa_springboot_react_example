@@ -18,7 +18,7 @@ public interface PostRepository extends JpaRepository<Post, Long> {
                     ST_SetSRID(ST_MakePoint(:longitude, :latitude), 4326),
                     :radius
                 ) = true
-            """)
+            """, nativeQuery = true)
     List<Post> findPostsWithinRadius(
             @Param("latitude") double latitude,
             @Param("longitude") double longitude,

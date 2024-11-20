@@ -2,12 +2,16 @@ package com.hsesslingen.jodel.entities;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.hsesslingen.jodel.serializers.PointDeserializer;
+import com.hsesslingen.jodel.serializers.PointSerializer;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 import org.locationtech.jts.geom.Point;
 
-import java.util.Collections;
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -22,6 +26,8 @@ public class Post {
     private String content;
 
     @Column(columnDefinition = "geography(POINT, 4326)")
+    @JsonSerialize(using = PointSerializer.class)
+    @JsonDeserialize(using = PointDeserializer.class)
     private Point location;
 
     @ManyToOne
@@ -30,15 +36,19 @@ public class Post {
 
     @JsonIgnore
     @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<PostBarbarian> votes;
+    private List<PostBarbarian> votes = new ArrayList<>();
 
     @JsonProperty("upvotes") // Include this in JSON response
     public int getUpVoteCount() {
-        return Collections.frequency(votes, VoteType.UP);
+        return votes.stream()
+                .mapToInt(vote -> vote.getVoteType() == VoteType.UP ? 1 : 0)
+                .sum();
     }
 
     @JsonProperty("downvotes") // Include this in JSON response
     public int getDownVoteCount() {
-        return Collections.frequency(votes, VoteType.DOWN);
+        return votes.stream()
+                .mapToInt(vote -> vote.getVoteType() == VoteType.DOWN ? 1 : 0)
+                .sum();
     }
 }

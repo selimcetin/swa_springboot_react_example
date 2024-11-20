@@ -39,7 +39,7 @@ public class JodelController {
         return ResponseEntity.ok(savedJodel);
     }
 
-    @PostMapping("/{jodelId}{username}{voteType}")
+    @PostMapping("/vote")
     @Transactional
     public ResponseEntity<Void> votePost(@RequestParam long jodelId, @RequestParam String username, @RequestParam int voteType) {
         Jodel targetJodel = jodelService.getJodelById(jodelId);

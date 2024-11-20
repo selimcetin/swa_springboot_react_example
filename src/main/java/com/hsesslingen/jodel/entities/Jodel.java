@@ -4,8 +4,6 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
-
-import java.util.Collections;
 import java.util.List;
 
 @Entity
@@ -33,11 +31,15 @@ public class Jodel {
 
     @JsonProperty("upvotes")
     public int getUpVoteCount() {
-        return Collections.frequency(votes, VoteType.UP);
+        return votes.stream()
+                .mapToInt(vote -> vote.getVoteType() == VoteType.UP ? 1 : 0)
+                .sum();
     }
 
     @JsonProperty("downvotes")
     public int getDownVoteCount() {
-        return Collections.frequency(votes, VoteType.DOWN);
+        return votes.stream()
+                .mapToInt(vote -> vote.getVoteType() == VoteType.DOWN ? 1 : 0)
+                .sum();
     }
 }
