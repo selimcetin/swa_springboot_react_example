@@ -34,18 +34,22 @@ public class Post {
     @JoinColumn(name = "username", referencedColumnName = "username")
     private Barbarian barbarian;
 
+    @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Jodel> jodels = new ArrayList<>();
+
+
     @JsonIgnore
     @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<PostBarbarian> votes = new ArrayList<>();
 
-    @JsonProperty("upvotes") // Include this in JSON response
+    @JsonProperty("upvotes")
     public int getUpVoteCount() {
         return votes.stream()
                 .mapToInt(vote -> vote.getVoteType() == VoteType.UP ? 1 : 0)
                 .sum();
     }
 
-    @JsonProperty("downvotes") // Include this in JSON response
+    @JsonProperty("downvotes")
     public int getDownVoteCount() {
         return votes.stream()
                 .mapToInt(vote -> vote.getVoteType() == VoteType.DOWN ? 1 : 0)
