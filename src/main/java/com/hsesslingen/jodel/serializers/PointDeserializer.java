@@ -15,7 +15,7 @@ public class PointDeserializer extends JsonDeserializer<Point> {
     private static final GeometryFactory geometryFactory = new GeometryFactory();
 
     @Override
-    public Point deserialize(JsonParser parser, DeserializationContext context) throws IOException, JsonProcessingException {
+    public Point deserialize(JsonParser parser, DeserializationContext context) throws IOException {
         JsonNode node = parser.getCodec().readTree(parser);
         double longitude = node.get("longitude").asDouble();
         double latitude = node.get("latitude").asDouble();
