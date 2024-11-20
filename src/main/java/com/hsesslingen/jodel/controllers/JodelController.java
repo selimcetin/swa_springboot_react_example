@@ -24,24 +24,24 @@ public class JodelController {
     private JodelService jodelService;
 
     @GetMapping
-    public ResponseEntity<List<Jodel>> getAllPosts() {
+    public ResponseEntity<List<Jodel>> getAllJodels() {
         return ResponseEntity.ok(jodelRepository.findAll());
     }
 
     @GetMapping("/{id}")
-    public Jodel getPostWithId(@PathVariable Long id) {
+    public Jodel getJodelWithId(@PathVariable Long id) {
         return jodelRepository.findById(id).orElseThrow( () -> new EntityIdNotFoundException(id, "Comment"));
     }
 
     @PostMapping
-    public ResponseEntity<Jodel> createPost(@RequestBody Jodel jodel) {
+    public ResponseEntity<Jodel> createJodel(@RequestBody Jodel jodel) {
         Jodel savedJodel = jodelRepository.save(jodel);
         return ResponseEntity.ok(savedJodel);
     }
 
     @PostMapping("/vote")
     @Transactional
-    public ResponseEntity<Void> votePost(@RequestParam long jodelId, @RequestParam String username, @RequestParam int voteType) {
+    public ResponseEntity<Void> voteJodel(@RequestParam long jodelId, @RequestParam String username, @RequestParam int voteType) {
         Jodel targetJodel = jodelService.getJodelById(jodelId);
         Barbarian targetBarbarian = barbarianService.getBarbarianById(username);
         JodelBarbarian jodelBarbarian = new JodelBarbarian();
