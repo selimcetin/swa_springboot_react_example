@@ -8,10 +8,10 @@ import java.io.IOException;
 
 public class PointSerializer extends JsonSerializer<Point> {
     @Override
-    public void serialize(Point value, JsonGenerator gen, SerializerProvider serializers) throws IOException {
-        gen.writeStartObject();
-        gen.writeNumberField("longitude", value.getX());
-        gen.writeNumberField("latitude", value.getY());
-        gen.writeEndObject();
+    public void serialize(Point point, JsonGenerator jsonGenerator, SerializerProvider serializerProvider) throws IOException {
+        jsonGenerator.writeStartObject();
+        jsonGenerator.writeNumberField("longitude", point.getX());
+        jsonGenerator.writeNumberField("latitude", point.getY());
+        jsonGenerator.writeEndObject();
     }
 }
