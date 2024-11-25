@@ -37,8 +37,6 @@ public class Post {
     @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Jodel> jodels = new ArrayList<>();
 
-
-    @JsonIgnore
     @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<PostBarbarian> votes = new ArrayList<>();
 

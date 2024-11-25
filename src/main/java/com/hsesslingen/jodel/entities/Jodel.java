@@ -1,5 +1,6 @@
 package com.hsesslingen.jodel.entities;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -26,8 +27,15 @@ public class Jodel {
     @JoinColumn(name = "post_id")
     private Post post;
 
+    @JsonProperty("post_id")
+    public Long getPostId() {
+        return post != null ? post.getId() : null;
+    }
+
     @OneToMany(mappedBy = "jodel", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<JodelBarbarian> votes;
+
+    private String content;
 
     @JsonProperty("upvotes")
     public int getUpVoteCount() {

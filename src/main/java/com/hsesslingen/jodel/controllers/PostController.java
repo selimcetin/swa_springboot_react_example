@@ -1,5 +1,6 @@
 package com.hsesslingen.jodel.controllers;
 
+import com.hsesslingen.jodel.DTOs.PostDTO;
 import com.hsesslingen.jodel.entities.Barbarian;
 import com.hsesslingen.jodel.entities.Post;
 import com.hsesslingen.jodel.entities.PostBarbarian;
@@ -23,31 +24,32 @@ public class PostController {
     private BarbarianService barbarianService;
     @Autowired
     private PostService postService;
-    @Autowired
-    private PostRepository postRepository;
-    @Autowired
-    private BarbarianRepository barbarianRepository;
 
     @GetMapping
-    public ResponseEntity<List<Post>> getAllPosts() {
+    public ResponseEntity<List<PostDTO>> getAllPosts() {
 
-        List<Post> list = postRepository.findAll();
-        return ResponseEntity.ok(postRepository.findAll());
+        List<Post> postList = postService.getAll();
+        List<PostDTO> postDtoList = postService.getPostDtoList(postList);
+        return ResponseEntity.ok(postDtoList);
     }
 
     @GetMapping("/radius")
-    public ResponseEntity<List<Post>> getAllPostsWithinRadius(@RequestParam double longitude, @RequestParam double latitude, @RequestParam double radius) {
-        return ResponseEntity.ok(postService.getPostsWithinRadius(longitude, latitude, radius));
+    public ResponseEntity<List<PostDTO>> getAllPostsWithinRadius(@RequestParam double longitude, @RequestParam double latitude, @RequestParam double radius) {
+        List<Post> postsWithinRadius = postService.getPostsWithinRadius(longitude, latitude, radius);
+        List<PostDTO> postDtoWithinRadius = postService.getPostDtoList(postsWithinRadius);
+        return ResponseEntity.ok(postDtoWithinRadius);
     }
 
     @GetMapping("/{id}")
-    public Post getPostWithId(@PathVariable Long id) {
-        return postService.getPostById(id);
+    public ResponseEntity<PostDTO> getPostWithId(@PathVariable Long id) {
+        Post post = postService.getPostById(id);
+        PostDTO postDto = postService.getPostDto(post);
+        return ResponseEntity.ok(postDto);
     }
 
     @PostMapping
     public ResponseEntity<Post> createPost(@RequestBody Post post) {
-        Post savedPost = postRepository.save(post);
+        Post savedPost = postService.savePost(post);
         return ResponseEntity.ok(savedPost);
     }
 

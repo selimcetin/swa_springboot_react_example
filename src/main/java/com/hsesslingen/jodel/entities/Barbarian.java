@@ -10,7 +10,6 @@ import lombok.Setter;
 @Getter
 @Setter
 public class Barbarian {
-
     @Id
     private String username;
 }

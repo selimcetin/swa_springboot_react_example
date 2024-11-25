@@ -1,6 +1,8 @@
 package com.hsesslingen.jodel.controllers;
 
+import com.hsesslingen.jodel.DTOs.JodelDTO;
 import com.hsesslingen.jodel.entities.*;
+import com.hsesslingen.jodel.mappers.JodelMapper;
 import com.hsesslingen.jodel.repositories.JodelRepository;
 import com.hsesslingen.jodel.exceptions.EntityIdNotFoundException;
 import com.hsesslingen.jodel.services.BarbarianService;
@@ -18,43 +20,44 @@ import java.util.List;
 @RequestMapping("/api/jodels")
 public class JodelController {
     @Autowired
-    private JodelRepository jodelRepository;
-    @Autowired
     private BarbarianService barbarianService;
     @Autowired
     private JodelService jodelService;
-
     @Autowired
     private PostService postService;
 
+
     @GetMapping
-    public ResponseEntity<List<Jodel>> getAllJodels() {
-        return ResponseEntity.ok(jodelRepository.findAll());
+    public ResponseEntity<List<JodelDTO>> getAllJodels() {
+        List<Jodel> jodelList = jodelService.getAll();
+        List<JodelDTO> jodelDtoList = jodelService.getJodelDtoList(jodelList);
+        return ResponseEntity.ok(jodelDtoList);
     }
 
     @GetMapping("/{id}")
-    public Jodel getJodelWithId(@PathVariable Long id) {
-        return jodelRepository.findById(id).orElseThrow( () -> new EntityIdNotFoundException(id, "Comment"));
+    public ResponseEntity<JodelDTO> getJodelWithId(@PathVariable Long id) {
+        Jodel jodel = jodelService.getJodelById(id);
+        return ResponseEntity.ok(jodelService.getJodelDto(jodel));
     }
 
     @PostMapping("/post")
-    public ResponseEntity<Jodel> createJodelOnPost(@RequestBody Jodel jodel, @RequestParam long postId) {
+    public ResponseEntity<JodelDTO> createJodelOnPost(@RequestBody Jodel jodel, @RequestParam long postId) {
         Post targetPost = postService.getPostById(postId);
 
         jodel.setPost(targetPost);
-        Jodel savedJodel = jodelRepository.save(jodel);
+        Jodel savedJodel = jodelService.saveJodel(jodel);
 
-        return ResponseEntity.ok(savedJodel);
+        return ResponseEntity.ok(jodelService.getJodelDto(savedJodel));
     }
 
     @PostMapping("/jodel")
-    public ResponseEntity<Jodel> createJodelOnJodel(@RequestBody Jodel jodel, @RequestParam long jodelId) {
+    public ResponseEntity<JodelDTO> createJodelOnJodel(@RequestBody Jodel jodel, @RequestParam long jodelId) {
         Jodel targetJodel = jodelService.getJodelById(jodelId);
 
         jodel.setParentJodel(targetJodel);
-        Jodel savedJodel = jodelRepository.save(jodel);
+        Jodel savedJodel = jodelService.saveJodel(jodel);
 
-        return ResponseEntity.ok(savedJodel);
+        return ResponseEntity.ok(jodelService.getJodelDto(savedJodel));
     }
 
     @PostMapping("/vote")
