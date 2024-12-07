@@ -1,22 +1,20 @@
-import { Location } from "../../interfaces/Location";
-
 export class Post {
   id: number;
   content: string;
-  location: Location; // Use the imported Location interface
+  location: { longitude: number; latitude: number };
   barbarianUsername: string;
-  upvotes: number;
+  upvotes: number =0;
   downvotes: number;
-  jodelIdList: number[];
+  jodelIdList: number[] = [];
 
   constructor(
     id: number,
     content: string,
-    location: Location,
+    location: { longitude: number; latitude: number },
     barbarianUsername: string,
     upvotes: number,
     downvotes: number,
-    jodelIdList: number[]
+    jodelIdList: number[] = []
   ) {
     this.id = id;
     this.content = content;

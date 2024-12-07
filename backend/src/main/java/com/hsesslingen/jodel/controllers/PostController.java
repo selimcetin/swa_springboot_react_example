@@ -14,6 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import java.util.Optional;
 
 import java.util.List;
 
@@ -47,11 +48,18 @@ public class PostController {
         return ResponseEntity.ok(postDto);
     }
 
-    @PostMapping
-    public ResponseEntity<Post> createPost(@RequestBody Post post) {
-        Post savedPost = postService.savePost(post);
-        return ResponseEntity.ok(savedPost);
+@PostMapping
+public ResponseEntity<Post> createPost(@RequestBody Post post) {
+    System.out.println("Received Post: " + post.getBarbarian().getUsername());
+
+    if (post.getBarbarian() == null) {
+        Barbarian defaultBarbarian = barbarianService.getDefaultBarbarian();
+        post.setBarbarian(defaultBarbarian);
     }
+
+    Post savedPost = postService.savePost(post);
+    return ResponseEntity.ok(savedPost);
+}
 
     @PostMapping("/vote")
     @Transactional

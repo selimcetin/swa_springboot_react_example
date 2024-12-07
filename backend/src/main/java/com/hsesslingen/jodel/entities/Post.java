@@ -41,16 +41,17 @@ public class Post {
     private List<PostBarbarian> votes = new ArrayList<>();
 
     @JsonProperty("upvotes")
-    public int getUpVoteCount() {
-        return votes.stream()
-                .mapToInt(vote -> vote.getVoteType() == VoteType.UP ? 1 : 0)
-                .sum();
-    }
+public int getUpVoteCount() {
+    return votes.stream()
+            .mapToInt(vote -> vote.getVoteType() == VoteType.UP ? 1 : 0)
+            .sum();
+}
 
-    @JsonProperty("downvotes")
-    public int getDownVoteCount() {
-        return votes.stream()
-                .mapToInt(vote -> vote.getVoteType() == VoteType.DOWN ? 1 : 0)
-                .sum();
-    }
+@JsonProperty("downvotes")
+public int getDownVoteCount() {
+    return votes.stream()
+            .mapToInt(vote -> vote.getVoteType() == VoteType.DOWN ? 1 : 0)
+            .sum();
+}
+
 }

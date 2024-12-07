@@ -1,4 +1,5 @@
 package com.hsesslingen.jodel.mappers;
+import java.util.Collections; // Add this import
 
 import com.hsesslingen.jodel.DTOs.PostDTO;
 import com.hsesslingen.jodel.entities.Jodel;
@@ -12,12 +13,25 @@ public class PostMapper {
         postDto.setId(post.getId());
         postDto.setContent(post.getContent());
         postDto.setLocation(post.getLocation());
-        postDto.setBarbarianUsername(post.getBarbarian().getUsername());
+        
+        // Null check for barbarian
+        if (post.getBarbarian() != null) {
+            postDto.setBarbarianUsername(post.getBarbarian().getUsername());
+        } else {
+            postDto.setBarbarianUsername("Unknown"); // Default value or placeholder
+        }
+
         postDto.setUpvotes(post.getUpVoteCount());
         postDto.setDownvotes(post.getDownVoteCount());
-        postDto.setJodelIdList(post.getJodels().stream()
+        
+        // Null check for jodels list
+        if (post.getJodels() != null) {
+            postDto.setJodelIdList(post.getJodels().stream()
                 .map(Jodel::getId)
                 .toList());
+        } else {
+            postDto.setJodelIdList(Collections.emptyList()); // Set to empty list if null
+        }
 
         return postDto;
     }

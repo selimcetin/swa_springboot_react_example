@@ -2,11 +2,12 @@ import { useEffect, useState } from "react";
 import "./App.css";
 import { Post } from "./data/classes/Post";
 import { PostController } from "./controllers/PostController";
+import CreatePostForm from "./components/CreatePostForm";
 
 function App() {
-  const [posts, setPosts] = useState<Post[]>([]); // State to hold the list of posts
-  const [error, setError] = useState<string | null>(null); // State to handle errors
-  const [loading, setLoading] = useState<boolean>(true); // State to handle loading
+  const [posts, setPosts] = useState<Post[]>([]);
+  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState<boolean>(true);
 
   useEffect(() => {
     const loadPosts = async () => {
@@ -25,6 +26,10 @@ function App() {
     loadPosts();
   }, []);
 
+  const handleNewPost = (newPost: Post) => {
+    setPosts((prevPosts) => [newPost, ...prevPosts]);
+  };
+
   if (loading) {
     return <div>Loading...</div>;
   }
@@ -36,6 +41,7 @@ function App() {
   return (
     <div>
       <h1>Post List</h1>
+      <CreatePostForm onPostCreated={handleNewPost} />
       {posts.length > 0 ? (
         posts.map((post) => (
           <div
@@ -53,7 +59,7 @@ function App() {
             <p>Username: {post.barbarianUsername}</p>
             <p>Upvotes: {post.upvotes}</p>
             <p>Downvotes: {post.downvotes}</p>
-            <p>Jodel IDs: {post.jodelIdList.join(", ")}</p>
+            <p>Jodel IDs: {(post.jodelIdList || []).join(", ")}</p> {/* Default to an empty array */}
           </div>
         ))
       ) : (
