@@ -3,6 +3,7 @@ import "./App.css";
 import { Post } from "./data/classes/Post";
 import { PostController } from "./controllers/PostController";
 import CreatePostForm from "./components/CreatePostForm";
+import "./components/CreatePostForm.css";
 
 function App() {
   const [posts, setPosts] = useState<Post[]>([]);
@@ -31,40 +32,37 @@ function App() {
   };
 
   if (loading) {
-    return <div>Loading...</div>;
+    return <div className="loading">Loading...</div>;
   }
 
   if (error) {
-    return <div>Error: {error}</div>;
+    return <div className="error">{error}</div>;
   }
 
   return (
-    <div>
-      <h1>Post List</h1>
+    <div className="app-container">
+      <h1 className="header">Post List</h1>
       <CreatePostForm onPostCreated={handleNewPost} />
-      {posts.length > 0 ? (
-        posts.map((post) => (
-          <div
-            key={post.id}
-            style={{
-              border: "1px solid #ccc",
-              margin: "10px",
-              padding: "10px",
-            }}
-          >
-            <h2>{post.content}</h2>
-            <p>
-              Location: {post.location.latitude}, {post.location.longitude}
-            </p>
-            <p>Username: {post.barbarianUsername}</p>
-            <p>Upvotes: {post.upvotes}</p>
-            <p>Downvotes: {post.downvotes}</p>
-            <p>Jodel IDs: {(post.jodelIdList || []).join(", ")}</p> {/* Default to an empty array */}
-          </div>
-        ))
-      ) : (
-        <p>No posts available.</p>
-      )}
+      <div className="post-list">
+        {posts.length > 0 ? (
+          posts.map((post) => (
+            <div className="post-card" key={post.id}>
+              <h2 className="post-content">{post.content}</h2>
+              <p className="post-location">
+                Location: {post.location.latitude}, {post.location.longitude}
+              </p>
+              <p className="post-username">Username: {post.barbarianUsername}</p>
+              <p className="post-upvotes">Upvotes: {post.upvotes}</p>
+              <p className="post-downvotes">Downvotes: {post.downvotes}</p>
+              <p className="post-jodel-ids">
+                Jodel IDs: {(post.jodelIdList || []).join(", ")}
+              </p>
+            </div>
+          ))
+        ) : (
+          <p className="no-posts">No posts available.</p>
+        )}
+      </div>
     </div>
   );
 }

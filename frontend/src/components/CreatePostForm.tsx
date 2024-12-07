@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { PostController } from "../controllers/PostController";
 import { Post } from "../data/classes/Post";
+import "./CreatePostForm.css";
 
 interface CreatePostFormProps {
   onPostCreated: (newPost: Post) => void;
