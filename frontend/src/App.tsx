@@ -4,12 +4,22 @@ import { Post } from "./data/classes/Post";
 import { PostController } from "./controllers/PostController";
 import CreatePostForm from "./components/CreatePostForm";
 import "./components/CreatePostForm.css";
+import { useKeycloak } from '@react-keycloak/web';
 
 function App() {
   const [posts, setPosts] = useState<Post[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
 
+
+  const { keycloak, initialized } = useKeycloak();
+
+  if (!initialized) {
+    return <div>Loading Keycloak...</div>;
+  }
+
+
+  
   useEffect(() => {
     const loadPosts = async () => {
       try {
@@ -41,6 +51,14 @@ function App() {
 
   return (
     <div className="app-container">
+      {keycloak.authenticated ? (
+      <>
+        <h1>Welcome, {keycloak.tokenParsed?.preferred_username}!</h1>
+        <button onClick={() => keycloak.logout()}>Logout</button>
+      </>
+    ) : (
+      <button onClick={() => keycloak.login()}>Login</button>
+    )}
       <h1 className="header">Post List</h1>
       <CreatePostForm onPostCreated={handleNewPost} />
       <div className="post-list">
