@@ -2,7 +2,6 @@ import { useEffect, useState } from "react";
 import "./App.css";
 import { Post } from "./data/classes/Post";
 import { PostController } from "./controllers/PostController";
-import CreatePostForm from "./components/CreatePostForm";
 import "./components/CreatePostForm.css";
 import { useKeycloak } from "@react-keycloak/web";
 
@@ -12,10 +11,6 @@ function App() {
   const [loading, setLoading] = useState<boolean>(true);
 
   const { keycloak, initialized } = useKeycloak();
-
-  const handleNewPost = (newPost: Post) => {
-    setPosts((prevPosts) => [newPost, ...prevPosts]);
-  };
 
   useEffect(() => {
     if (!initialized) return;
@@ -55,7 +50,6 @@ function App() {
         <button onClick={() => keycloak.login()}>Login</button>
       )}
       <h1 className="header">Post List</h1>
-      <CreatePostForm onPostCreated={handleNewPost} />
       <div className="post-list">
         {posts.length > 0 ? (
           posts.map((post) => (
