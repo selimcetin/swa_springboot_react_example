@@ -3,7 +3,7 @@ export class Post {
   content: string;
   location: { longitude: number; latitude: number };
   barbarianUsername: string;
-  upvotes: number =0;
+  upvotes: number = 0;
   downvotes: number;
   jodelIdList: number[] = [];
 

@@ -18,10 +18,8 @@ function App() {
   };
 
   useEffect(() => {
-    // If initialized is false, we don't load posts yet
     if (!initialized) return;
 
-    // load posts only when initialized is true
     (async () => {
       try {
         const fetchedPosts = await PostController.fetchPosts();
@@ -34,7 +32,6 @@ function App() {
     })();
   }, [initialized]);
 
-  // Now conditionally render based on state AFTER calling hooks
   if (!initialized) {
     return <div>Loading Keycloak...</div>;
   }
