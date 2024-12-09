@@ -12,10 +12,7 @@ export class PostController {
   static async fetchPosts(): Promise<Post[]> {
     try {
       const response = await apiClient.get<Post[]>("/posts");
-      return response.data.map((post) => ({
-        ...post,
-        jodelIdList: post.jodelIdList || [], // Default to an empty array if undefined
-      }));
+      return response.data;
     } catch (error) {
       PostController.handleError(error);
       throw error;
@@ -32,13 +29,7 @@ export class PostController {
     }
   }
 
-  static async createPost(newPost: {
-    content: string;
-    barbarian: { username: string };
-    location: { longitude: number; latitude: number };
-  }): Promise<Post> {
-    console.log("Payload being sent to the backend:", newPost);
-
+  static async createPost(newPost: Omit<Post, "id">): Promise<Post> {
     try {
       const response = await apiClient.post<Post>("/posts", newPost);
       return response.data;
