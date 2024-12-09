@@ -2,7 +2,7 @@ import axios from "axios";
 import { Jodel } from "../data/classes/Jodel";
 
 const apiClient = axios.create({
-  baseURL: "http://localhost:8080/api",
+  baseURL: "/api",
   headers: {
     "Content-Type": "application/json",
   },
@@ -58,6 +58,38 @@ export class JodelController {
   static async deleteJodel(id: number): Promise<void> {
     try {
       await apiClient.delete(`/jodels/${id}`);
+    } catch (error) {
+      JodelController.handleError(error);
+      throw error;
+    }
+  }
+
+  static async createJodelOnPost(
+    newJodel: Omit<Jodel, "id">,
+    postId: number
+  ): Promise<Jodel> {
+    try {
+      const response = await apiClient.post<Jodel>(
+        `/jodels/post?postId=${postId}`,
+        newJodel
+      );
+      return response.data;
+    } catch (error) {
+      JodelController.handleError(error);
+      throw error;
+    }
+  }
+
+  static async createJodelOnJodel(
+    newJodel: Omit<Jodel, "id">,
+    jodelId: number
+  ): Promise<Jodel> {
+    try {
+      const response = await apiClient.post<Jodel>(
+        `/jodels/jodel?jodelId=${jodelId}`,
+        newJodel
+      );
+      return response.data;
     } catch (error) {
       JodelController.handleError(error);
       throw error;

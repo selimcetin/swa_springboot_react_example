@@ -1,0 +1,823 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<project name="Jodel" database="PostgreSQL" id="PostgreSQL-4f0" >
+	<comment><![CDATA[Softwarearchitecture Labor HS Esslingen]]></comment>
+	<schema name="jodel" >
+		<table name="barbarian" prior="jodleror" >
+			<comment><![CDATA[Barbarians are users of the app.]]></comment>
+			<column name="username" type="varchar" length="100" jt="12" mandatory="y" />
+			<index name="pk_user_username" unique="PRIMARY_KEY" >
+				<column name="username" />
+			</index>
+		</table>
+		<table name="jodel" prior="jodel_comment" >
+			<comment><![CDATA[A jodel (aka comment) can be made on posts or other jodels by barbarians aka users.]]></comment>
+			<column name="id" type="integer" jt="4" mandatory="y" />
+			<column name="parent_jodel_id" prior="parent_comment_id" type="integer" jt="4" mandatory="y" >
+				<comment><![CDATA[This can be null. If it is not null, the jodel is a sub-jodel of another jodel.]]></comment>
+			</column>
+			<column name="post_id" type="integer" jt="4" mandatory="y" >
+				<comment><![CDATA[Each jodel is connected to one post, identified by the post_id.]]></comment>
+			</column>
+			<index name="pk_comment_id" unique="PRIMARY_KEY" >
+				<column name="id" />
+				<column name="parent_jodel_id" />
+				<column name="post_id" />
+			</index>
+			<index name="unq_id" unique="UNIQUE_INDEX" >
+				<column name="id" />
+			</index>
+			<fk name="fk_jodel_jodel_id" to_schema="jodel" to_table="jodel" >
+				<fk_column name="parent_jodel_id" pk="id" />
+			</fk>
+			<fk name="fk_jodel_post_id" to_schema="jodel" to_table="post" >
+				<fk_column name="post_id" pk="id" />
+			</fk>
+		</table>
+		<table name="jodel_barbarian" prior="jodel_jodleror" >
+			<comment><![CDATA[All votes of barbarians (users) on a post.]]></comment>
+			<column name="jodel_id" prior="jodel_comment_id" type="integer" jt="4" mandatory="y" />
+			<column name="username" type="varchar" length="100" jt="12" mandatory="y" />
+			<column name="vote_type" type="integer" jt="4" mandatory="y" >
+				<comment><![CDATA[Enum 'UP' or 'DOWN']]></comment>
+			</column>
+			<index name="pk_comment_user_vote_comment_id_username" unique="PRIMARY_KEY" >
+				<column name="jodel_id" />
+				<column name="username" />
+			</index>
+			<fk name="fk_jodel_jodleror_jodel_jodel_id" to_schema="jodel" to_table="jodel" >
+				<fk_column name="jodel_id" pk="id" />
+			</fk>
+			<fk name="fk_jodel_jodleror_jodleror_username" to_schema="jodel" to_table="barbarian" >
+				<fk_column name="username" pk="username" />
+			</fk>
+		</table>
+		<table name="post" prior="Entity" >
+			<column name="id" type="integer" jt="4" mandatory="y" />
+			<column name="content" type="varchar" length="1000" jt="12" mandatory="y" >
+				<comment><![CDATA[The content of the post. This is a text.]]></comment>
+			</column>
+			<column name="location" prior="location_latitude" type="point" jt="1111" mandatory="y" >
+				<comment><![CDATA[Location in Georgraphy(POINT,4326) format. Comes from SRID 4326, longitude and latitude.]]></comment>
+			</column>
+			<column name="username" type="varchar" length="100" jt="12" mandatory="y" >
+				<comment><![CDATA[Creator of the post, the user identified by the unique username.]]></comment>
+			</column>
+			<index name="pk_post_id" unique="PRIMARY_KEY" >
+				<column name="id" />
+			</index>
+			<fk name="fk_post_user_username" to_schema="jodel" to_table="barbarian" >
+				<fk_column name="username" pk="username" />
+			</fk>
+		</table>
+		<table name="post_barbarian" prior="post_jodleror" >
+			<comment><![CDATA[All votes of barbarians aka users on a post.]]></comment>
+			<column name="post_id" type="integer" jt="4" mandatory="y" />
+			<column name="username" type="varchar" length="100" jt="12" mandatory="y" />
+			<column name="vote_type" type="integer" jt="4" mandatory="y" >
+				<comment><![CDATA[Enum 'UP' or 'DOWN']]></comment>
+			</column>
+			<index name="pk_post_user_vote_post_id_username" unique="PRIMARY_KEY" >
+				<column name="post_id" />
+				<column name="username" />
+			</index>
+			<fk name="fk_post_barbarian_post_post_id" to_schema="jodel" to_table="post" >
+				<fk_column name="post_id" pk="id" />
+			</fk>
+			<fk name="fk_post_barbarian_barbarian_username" to_schema="jodel" to_table="barbarian" >
+				<fk_column name="username" pk="username" />
+			</fk>
+		</table>
+	</schema>
+	<layout name="Default Layout" id="Layout-18f0" confirmed="y" show_relation="columns" >
+		<entity schema="jodel" name="barbarian" color="C1D8EE" x="384" y="48" />
+		<entity schema="jodel" name="jodel" color="C1D8EE" x="208" y="256" />
+		<entity schema="jodel" name="jodel_barbarian" color="C1D8EE" x="464" y="256" />
+		<entity schema="jodel" name="post" color="C1D8EE" x="48" y="48" />
+		<entity schema="jodel" name="post_barbarian" color="C1D8EE" x="608" y="128" />
+		<script name="SQL_Editor" id="Editor-1562" language="SQL" >
+			<string><![CDATA[CREATE SCHEMA IF NOT EXISTS jodel;
+
+CREATE  TABLE jodel."user" ( 
+	username             varchar(100)  NOT NULL  ,
+	CONSTRAINT pk_user_username PRIMARY KEY ( username )
+ );
+
+CREATE  TABLE jodel.vote ( 
+	"type"               integer    ,
+	CONSTRAINT pk_type UNIQUE ( "type" ) ,
+	CONSTRAINT pk_type_001 UNIQUE ( "type" ) ,
+	CONSTRAINT pk_type_002 UNIQUE ( "type" ) 
+ );
+
+CREATE  TABLE jodel.post ( 
+	id                   integer  NOT NULL  ,
+	content              varchar(1000)  NOT NULL  ,
+	location_latitude    double precision  NOT NULL  ,
+	location_longitude   double precision  NOT NULL  ,
+	username             varchar(100)  NOT NULL  ,
+	CONSTRAINT pk_post_id PRIMARY KEY ( id )
+ );
+
+CREATE UNIQUE INDEX unq_username ON jodel.post ( username );
+
+CREATE  TABLE jodel.post_user_vote ( 
+	post_id              integer  NOT NULL  ,
+	username             varchar(100)  NOT NULL  ,
+	vote_type            varchar  NOT NULL  ,
+	CONSTRAINT pk_post_user_vote_post_id_username PRIMARY KEY ( post_id, username, vote_type )
+ );
+
+CREATE  TABLE jodel."comment" ( 
+	id                   integer  NOT NULL  ,
+	parent_comment_id    integer  NOT NULL  ,
+	post_id              integer  NOT NULL  ,
+	CONSTRAINT pk_comment_id PRIMARY KEY ( id, parent_comment_id, post_id )
+ );
+
+CREATE UNIQUE INDEX unq_id ON jodel."comment" ( id );
+
+CREATE  TABLE jodel.comment_user_vote ( 
+	comment_id           integer  NOT NULL  ,
+	username             varchar(100)  NOT NULL  ,
+	vote_type            varchar(111)  NOT NULL  ,
+	CONSTRAINT pk_comment_user_vote_comment_id_username PRIMARY KEY ( comment_id, username, vote_type )
+ );
+
+ALTER TABLE jodel."comment" ADD CONSTRAINT fk_comment_comment_id FOREIGN KEY ( parent_comment_id ) REFERENCES jodel."comment"( id );
+
+ALTER TABLE jodel."comment" ADD CONSTRAINT fk_comment_post_id FOREIGN KEY ( post_id ) REFERENCES jodel.post( id );
+
+ALTER TABLE jodel.comment_user_vote ADD CONSTRAINT fk_comment_user_vote_comment_comment_id FOREIGN KEY ( comment_id ) REFERENCES jodel."comment"( id );
+
+ALTER TABLE jodel.comment_user_vote ADD CONSTRAINT fk_post_user_vote_user_username FOREIGN KEY ( username ) REFERENCES jodel.post( username );
+
+ALTER TABLE jodel.comment_user_vote ADD CONSTRAINT fk_comment_user_vote_vote_type FOREIGN KEY ( vote_type ) REFERENCES jodel.vote( "type" );
+
+ALTER TABLE jodel.post ADD CONSTRAINT fk_post_user_username FOREIGN KEY ( username ) REFERENCES jodel."user"( username );
+
+ALTER TABLE jodel.post_user_vote ADD CONSTRAINT fk_post_user_vote_post_id FOREIGN KEY ( post_id ) REFERENCES jodel.post( id );
+
+ALTER TABLE jodel.post_user_vote ADD CONSTRAINT fk_post_user_vote_username FOREIGN KEY ( username ) REFERENCES jodel."user"( username );
+
+ALTER TABLE jodel.post_user_vote ADD CONSTRAINT fk_post_user_vote_vote FOREIGN KEY ( vote_type ) REFERENCES jodel.vote( "type" );
+
+COMMENT ON TABLE jodel.vote IS 'Votes can be made on posts or comments. Either up- or downvote.';
+
+COMMENT ON COLUMN jodel.vote."type" IS 'Type of vote, either up- or downvote.';
+
+COMMENT ON COLUMN jodel.post.content IS 'The content of the post. This is a text.';
+
+COMMENT ON COLUMN jodel.post.location_latitude IS 'Latitude of the location, where the post was made from.';
+
+COMMENT ON COLUMN jodel.post.location_longitude IS 'Latitude of the location, where the post was made from.';
+
+COMMENT ON COLUMN jodel.post.username IS 'Creator of the post, the user identified by the unique username.';
+
+COMMENT ON TABLE jodel.post_user_vote IS 'All votes of users on a post.';
+
+COMMENT ON COLUMN jodel.post_user_vote.vote_type IS 'Either up- or downvote.';
+
+COMMENT ON TABLE jodel."comment" IS 'A comment can be made on posts or other comments by users.';
+
+COMMENT ON COLUMN jodel."comment".parent_comment_id IS 'This can be null. If it is not null, the comment is a sub-comment of another comment.';
+
+COMMENT ON COLUMN jodel."comment".post_id IS 'Each comment is connected to one post, identified by the post_id.';
+
+COMMENT ON TABLE jodel.comment_user_vote IS 'All votes of users on a post.';]]></string>
+		</script>
+		<script name="SQL_Editor_001" id="Editor-2134" language="SQL" >
+			<string><![CDATA[CREATE SCHEMA IF NOT EXISTS jodel;
+
+CREATE  TABLE jodel."user" ( 
+	username             varchar(100)  NOT NULL  ,
+	CONSTRAINT pk_user_username PRIMARY KEY ( username )
+ );
+
+CREATE  TABLE jodel.vote ( 
+	"type"               integer  NOT NULL  ,
+	CONSTRAINT pk_type UNIQUE ( "type" ) 
+ );
+
+CREATE  TABLE jodel.post ( 
+	id                   integer  NOT NULL  ,
+	content              varchar(1000)  NOT NULL  ,
+	location_latitude    double precision  NOT NULL  ,
+	location_longitude   double precision  NOT NULL  ,
+	username             varchar(100)  NOT NULL  ,
+	CONSTRAINT pk_post_id PRIMARY KEY ( id )
+ );
+
+CREATE UNIQUE INDEX unq_username ON jodel.post ( username );
+
+CREATE  TABLE jodel.post_user_vote ( 
+	post_id              integer  NOT NULL  ,
+	username             varchar(100)  NOT NULL  ,
+	vote_type            integer  NOT NULL  ,
+	CONSTRAINT pk_post_user_vote_post_id_username PRIMARY KEY ( post_id, username )
+ );
+
+CREATE  TABLE jodel."comment" ( 
+	id                   integer  NOT NULL  ,
+	parent_comment_id    integer  NOT NULL  ,
+	post_id              integer  NOT NULL  ,
+	CONSTRAINT pk_comment_id PRIMARY KEY ( id, parent_comment_id, post_id )
+ );
+
+CREATE UNIQUE INDEX unq_id ON jodel."comment" ( id );
+
+CREATE  TABLE jodel.comment_user_vote ( 
+	comment_id           integer  NOT NULL  ,
+	username             varchar(100)  NOT NULL  ,
+	vote_type            integer  NOT NULL  ,
+	CONSTRAINT pk_comment_user_vote_comment_id_username PRIMARY KEY ( comment_id, username )
+ );
+
+ALTER TABLE jodel."comment" ADD CONSTRAINT fk_comment_comment_id FOREIGN KEY ( parent_comment_id ) REFERENCES jodel."comment"( id );
+
+ALTER TABLE jodel."comment" ADD CONSTRAINT fk_comment_post_id FOREIGN KEY ( post_id ) REFERENCES jodel.post( id );
+
+ALTER TABLE jodel.comment_user_vote ADD CONSTRAINT fk_comment_user_vote_comment_comment_id FOREIGN KEY ( comment_id ) REFERENCES jodel."comment"( id );
+
+ALTER TABLE jodel.comment_user_vote ADD CONSTRAINT fk_post_user_vote_user_username FOREIGN KEY ( username ) REFERENCES jodel.post( username );
+
+ALTER TABLE jodel.comment_user_vote ADD CONSTRAINT fk_comment_user_vote_vote_type FOREIGN KEY ( vote_type ) REFERENCES jodel.vote( "type" );
+
+ALTER TABLE jodel.post ADD CONSTRAINT fk_post_user_username FOREIGN KEY ( username ) REFERENCES jodel."user"( username );
+
+ALTER TABLE jodel.post_user_vote ADD CONSTRAINT fk_post_user_vote_post_id FOREIGN KEY ( post_id ) REFERENCES jodel.post( id );
+
+ALTER TABLE jodel.post_user_vote ADD CONSTRAINT fk_post_user_vote_username FOREIGN KEY ( username ) REFERENCES jodel."user"( username );
+
+ALTER TABLE jodel.post_user_vote ADD CONSTRAINT fk_post_user_vote_type FOREIGN KEY ( vote_type ) REFERENCES jodel.vote( "type" );
+
+COMMENT ON TABLE jodel.vote IS 'Votes can be made on posts or comments. Either up- or downvote.';
+
+COMMENT ON COLUMN jodel.vote."type" IS 'Type of vote, either up- or downvote. 1 is up, 0 is down.';
+
+COMMENT ON COLUMN jodel.post.content IS 'The content of the post. This is a text.';
+
+COMMENT ON COLUMN jodel.post.location_latitude IS 'Latitude of the location, where the post was made from.';
+
+COMMENT ON COLUMN jodel.post.location_longitude IS 'Latitude of the location, where the post was made from.';
+
+COMMENT ON COLUMN jodel.post.username IS 'Creator of the post, the user identified by the unique username.';
+
+COMMENT ON TABLE jodel.post_user_vote IS 'All votes of users on a post.';
+
+COMMENT ON COLUMN jodel.post_user_vote.vote_type IS 'Either up- or downvote. 1 is up and 0 is down.';
+
+COMMENT ON TABLE jodel."comment" IS 'A comment can be made on posts or other comments by users.';
+
+COMMENT ON COLUMN jodel."comment".parent_comment_id IS 'This can be null. If it is not null, the comment is a sub-comment of another comment.';
+
+COMMENT ON COLUMN jodel."comment".post_id IS 'Each comment is connected to one post, identified by the post_id.';
+
+COMMENT ON TABLE jodel.comment_user_vote IS 'All votes of users on a post.';
+
+COMMENT ON COLUMN jodel.comment_user_vote.vote_type IS '1 for up- 0 for downvote.';]]></string>
+		</script>
+		<script name="SQL_Editor_002" id="Editor-2246" language="SQL" >
+			<string><![CDATA[CREATE SCHEMA IF NOT EXISTS jodel;
+
+CREATE  TABLE jodel."user" ( 
+	username             varchar(100)  NOT NULL  ,
+	CONSTRAINT pk_user_username PRIMARY KEY ( username )
+ );
+
+CREATE  TABLE jodel.post ( 
+	id                   integer  NOT NULL  ,
+	content              varchar(1000)  NOT NULL  ,
+	location_latitude    double precision  NOT NULL  ,
+	location_longitude   double precision  NOT NULL  ,
+	username             varchar(100)  NOT NULL  ,
+	CONSTRAINT pk_post_id PRIMARY KEY ( id )
+ );
+
+CREATE  TABLE jodel.post_user_vote ( 
+	post_id              integer  NOT NULL  ,
+	username             varchar(100)  NOT NULL  ,
+	vote_type            integer  NOT NULL  ,
+	CONSTRAINT pk_post_user_vote_post_id_username PRIMARY KEY ( post_id, username )
+ );
+
+CREATE  TABLE jodel."comment" ( 
+	id                   integer  NOT NULL  ,
+	parent_comment_id    integer  NOT NULL  ,
+	post_id              integer  NOT NULL  ,
+	CONSTRAINT pk_comment_id PRIMARY KEY ( id, parent_comment_id, post_id )
+ );
+
+CREATE UNIQUE INDEX unq_id ON jodel."comment" ( id );
+
+CREATE  TABLE jodel.comment_user_vote ( 
+	comment_id           integer  NOT NULL  ,
+	username             varchar(100)  NOT NULL  ,
+	vote_type            integer  NOT NULL  ,
+	CONSTRAINT pk_comment_user_vote_comment_id_username PRIMARY KEY ( comment_id, username )
+ );
+
+ALTER TABLE jodel."comment" ADD CONSTRAINT fk_comment_comment_id FOREIGN KEY ( parent_comment_id ) REFERENCES jodel."comment"( id );
+
+ALTER TABLE jodel."comment" ADD CONSTRAINT fk_comment_post_id FOREIGN KEY ( post_id ) REFERENCES jodel.post( id );
+
+ALTER TABLE jodel.comment_user_vote ADD CONSTRAINT fk_comment_user_vote_comment_comment_id FOREIGN KEY ( comment_id ) REFERENCES jodel."comment"( id );
+
+ALTER TABLE jodel.comment_user_vote ADD CONSTRAINT fk_post_user_vote_user_username FOREIGN KEY ( username ) REFERENCES jodel.post( username );
+
+ALTER TABLE jodel.post ADD CONSTRAINT fk_post_user_username FOREIGN KEY ( username ) REFERENCES jodel."user"( username );
+
+ALTER TABLE jodel.post_user_vote ADD CONSTRAINT fk_post_user_vote_post_id FOREIGN KEY ( post_id ) REFERENCES jodel.post( id );
+
+ALTER TABLE jodel.post_user_vote ADD CONSTRAINT fk_post_user_vote_username FOREIGN KEY ( username ) REFERENCES jodel."user"( username );
+
+COMMENT ON COLUMN jodel.post.content IS 'The content of the post. This is a text.';
+
+COMMENT ON COLUMN jodel.post.location_latitude IS 'Latitude of the location, where the post was made from.';
+
+COMMENT ON COLUMN jodel.post.location_longitude IS 'Latitude of the location, where the post was made from.';
+
+COMMENT ON COLUMN jodel.post.username IS 'Creator of the post, the user identified by the unique username.';
+
+COMMENT ON TABLE jodel.post_user_vote IS 'All votes of users on a post.';
+
+COMMENT ON COLUMN jodel.post_user_vote.vote_type IS 'Either up- or downvote. 1 is up and 0 is down.';
+
+COMMENT ON TABLE jodel."comment" IS 'A comment can be made on posts or other comments by users.';
+
+COMMENT ON COLUMN jodel."comment".parent_comment_id IS 'This can be null. If it is not null, the comment is a sub-comment of another comment.';
+
+COMMENT ON COLUMN jodel."comment".post_id IS 'Each comment is connected to one post, identified by the post_id.';
+
+COMMENT ON TABLE jodel.comment_user_vote IS 'All votes of users on a post.';
+
+COMMENT ON COLUMN jodel.comment_user_vote.vote_type IS '1 for up- 0 for downvote.';
+]]></string>
+		</script>
+		<script name="SQL_Editor_003" id="Editor-b2" language="SQL" >
+			<string><![CDATA[CREATE SCHEMA IF NOT EXISTS jodel;
+
+CREATE  TABLE jodel."user" ( 
+	username             varchar(100)  NOT NULL  ,
+	CONSTRAINT pk_user_username PRIMARY KEY ( username )
+ );
+
+CREATE  TABLE jodel.post ( 
+	id                   integer  NOT NULL  ,
+	content              varchar(1000)  NOT NULL  ,
+	location_latitude    double precision  NOT NULL  ,
+	location_longitude   double precision  NOT NULL  ,
+	username             varchar(100)  NOT NULL  ,
+	CONSTRAINT pk_post_id PRIMARY KEY ( id )
+ );
+
+CREATE  TABLE jodel.post_user ( 
+	post_id              integer  NOT NULL  ,
+	username             varchar(100)  NOT NULL  ,
+	vote_type            integer  NOT NULL  ,
+	CONSTRAINT pk_post_user_vote_post_id_username PRIMARY KEY ( post_id, username )
+ );
+
+CREATE  TABLE jodel."comment" ( 
+	id                   integer  NOT NULL  ,
+	parent_comment_id    integer  NOT NULL  ,
+	post_id              integer  NOT NULL  ,
+	CONSTRAINT pk_comment_id PRIMARY KEY ( id, parent_comment_id, post_id )
+ );
+
+CREATE UNIQUE INDEX unq_id ON jodel."comment" ( id );
+
+CREATE  TABLE jodel.comment_user ( 
+	comment_id           integer  NOT NULL  ,
+	username             varchar(100)  NOT NULL  ,
+	vote_type            integer  NOT NULL  ,
+	CONSTRAINT pk_comment_user_vote_comment_id_username PRIMARY KEY ( comment_id, username )
+ );
+
+ALTER TABLE jodel."comment" ADD CONSTRAINT fk_comment_comment_id FOREIGN KEY ( parent_comment_id ) REFERENCES jodel."comment"( id );
+
+ALTER TABLE jodel."comment" ADD CONSTRAINT fk_comment_post_id FOREIGN KEY ( post_id ) REFERENCES jodel.post( id );
+
+ALTER TABLE jodel.comment_user ADD CONSTRAINT fk_comment_user_comment_comment_id FOREIGN KEY ( comment_id ) REFERENCES jodel."comment"( id );
+
+ALTER TABLE jodel.comment_user ADD CONSTRAINT fk_comment_user_user_username FOREIGN KEY ( username ) REFERENCES jodel."user"( username );
+
+ALTER TABLE jodel.post ADD CONSTRAINT fk_post_user_username FOREIGN KEY ( username ) REFERENCES jodel."user"( username );
+
+ALTER TABLE jodel.post_user ADD CONSTRAINT fk_post_user_post_post_id FOREIGN KEY ( post_id ) REFERENCES jodel.post( id );
+
+ALTER TABLE jodel.post_user ADD CONSTRAINT fk_post_user_user_username FOREIGN KEY ( username ) REFERENCES jodel."user"( username );
+
+COMMENT ON COLUMN jodel.post.content IS 'The content of the post. This is a text.';
+
+COMMENT ON COLUMN jodel.post.location_latitude IS 'Latitude of the location, where the post was made from.';
+
+COMMENT ON COLUMN jodel.post.location_longitude IS 'Latitude of the location, where the post was made from.';
+
+COMMENT ON COLUMN jodel.post.username IS 'Creator of the post, the user identified by the unique username.';
+
+COMMENT ON TABLE jodel.post_user IS 'All votes of users on a post.';
+
+COMMENT ON COLUMN jodel.post_user.vote_type IS 'Enum ''UP'' or ''DOWN''';
+
+COMMENT ON TABLE jodel."comment" IS 'A comment can be made on posts or other comments by users.';
+
+COMMENT ON COLUMN jodel."comment".parent_comment_id IS 'This can be null. If it is not null, the comment is a sub-comment of another comment.';
+
+COMMENT ON COLUMN jodel."comment".post_id IS 'Each comment is connected to one post, identified by the post_id.';
+
+COMMENT ON TABLE jodel.comment_user IS 'All votes of users on a post.';
+
+COMMENT ON COLUMN jodel.comment_user.vote_type IS 'Enum ''UP'' or ''DOWN''';
+]]></string>
+		</script>
+		<script name="SQL_Editor_004" id="Editor-d66" language="SQL" >
+			<string><![CDATA[CREATE SCHEMA IF NOT EXISTS jodel;
+
+CREATE  TABLE jodel.jodel_user ( 
+	username             varchar(100)  NOT NULL  ,
+	CONSTRAINT pk_user_username PRIMARY KEY ( username )
+ );
+
+CREATE  TABLE jodel.post ( 
+	id                   integer  NOT NULL  ,
+	content              varchar(1000)  NOT NULL  ,
+	location_latitude    double precision  NOT NULL  ,
+	location_longitude   double precision  NOT NULL  ,
+	username             varchar(100)  NOT NULL  ,
+	CONSTRAINT pk_post_id PRIMARY KEY ( id )
+ );
+
+CREATE  TABLE jodel.post_user ( 
+	post_id              integer  NOT NULL  ,
+	username             varchar(100)  NOT NULL  ,
+	vote_type            integer  NOT NULL  ,
+	CONSTRAINT pk_post_user_vote_post_id_username PRIMARY KEY ( post_id, username )
+ );
+
+CREATE  TABLE jodel."comment" ( 
+	id                   integer  NOT NULL  ,
+	parent_comment_id    integer  NOT NULL  ,
+	post_id              integer  NOT NULL  ,
+	CONSTRAINT pk_comment_id PRIMARY KEY ( id, parent_comment_id, post_id )
+ );
+
+CREATE UNIQUE INDEX unq_id ON jodel."comment" ( id );
+
+CREATE  TABLE jodel.comment_user ( 
+	comment_id           integer  NOT NULL  ,
+	username             varchar(100)  NOT NULL  ,
+	vote_type            integer  NOT NULL  ,
+	CONSTRAINT pk_comment_user_vote_comment_id_username PRIMARY KEY ( comment_id, username )
+ );
+
+ALTER TABLE jodel."comment" ADD CONSTRAINT fk_comment_comment_id FOREIGN KEY ( parent_comment_id ) REFERENCES jodel."comment"( id );
+
+ALTER TABLE jodel."comment" ADD CONSTRAINT fk_comment_post_id FOREIGN KEY ( post_id ) REFERENCES jodel.post( id );
+
+ALTER TABLE jodel.comment_user ADD CONSTRAINT fk_comment_user_comment_comment_id FOREIGN KEY ( comment_id ) REFERENCES jodel."comment"( id );
+
+ALTER TABLE jodel.comment_user ADD CONSTRAINT fk_comment_user_user_username FOREIGN KEY ( username ) REFERENCES jodel.jodel_user( username );
+
+ALTER TABLE jodel.post ADD CONSTRAINT fk_post_user_username FOREIGN KEY ( username ) REFERENCES jodel.jodel_user( username );
+
+ALTER TABLE jodel.post_user ADD CONSTRAINT fk_post_user_post_post_id FOREIGN KEY ( post_id ) REFERENCES jodel.post( id );
+
+ALTER TABLE jodel.post_user ADD CONSTRAINT fk_post_user_user_username FOREIGN KEY ( username ) REFERENCES jodel.jodel_user( username );
+
+COMMENT ON COLUMN jodel.post.content IS 'The content of the post. This is a text.';
+
+COMMENT ON COLUMN jodel.post.location_latitude IS 'Latitude of the location, where the post was made from.';
+
+COMMENT ON COLUMN jodel.post.location_longitude IS 'Latitude of the location, where the post was made from.';
+
+COMMENT ON COLUMN jodel.post.username IS 'Creator of the post, the user identified by the unique username.';
+
+COMMENT ON TABLE jodel.post_user IS 'All votes of users on a post.';
+
+COMMENT ON COLUMN jodel.post_user.vote_type IS 'Enum ''UP'' or ''DOWN''';
+
+COMMENT ON TABLE jodel."comment" IS 'A comment can be made on posts or other comments by users.';
+
+COMMENT ON COLUMN jodel."comment".parent_comment_id IS 'This can be null. If it is not null, the comment is a sub-comment of another comment.';
+
+COMMENT ON COLUMN jodel."comment".post_id IS 'Each comment is connected to one post, identified by the post_id.';
+
+COMMENT ON TABLE jodel.comment_user IS 'All votes of users on a post.';
+
+COMMENT ON COLUMN jodel.comment_user.vote_type IS 'Enum ''UP'' or ''DOWN''';
+]]></string>
+		</script>
+		<script name="SQL_Editor_005" id="Editor-b2c" language="SQL" >
+			<string><![CDATA[CREATE SCHEMA IF NOT EXISTS jodel;
+
+CREATE  TABLE jodel.jodel_user ( 
+	username             varchar(100)  NOT NULL  ,
+	CONSTRAINT pk_user_username PRIMARY KEY ( username )
+ );
+
+CREATE  TABLE jodel.post ( 
+	id                   integer  NOT NULL  ,
+	content              varchar(1000)  NOT NULL  ,
+	location_latitude    double precision  NOT NULL  ,
+	location_longitude   double precision  NOT NULL  ,
+	username             varchar(100)  NOT NULL  ,
+	CONSTRAINT pk_post_id PRIMARY KEY ( id )
+ );
+
+CREATE  TABLE jodel.post_jodel_user ( 
+	post_id              integer  NOT NULL  ,
+	username             varchar(100)  NOT NULL  ,
+	vote_type            integer  NOT NULL  ,
+	CONSTRAINT pk_post_user_vote_post_id_username PRIMARY KEY ( post_id, username )
+ );
+
+CREATE  TABLE jodel."comment" ( 
+	id                   integer  NOT NULL  ,
+	parent_comment_id    integer  NOT NULL  ,
+	post_id              integer  NOT NULL  ,
+	CONSTRAINT pk_comment_id PRIMARY KEY ( id, parent_comment_id, post_id )
+ );
+
+CREATE UNIQUE INDEX unq_id ON jodel."comment" ( id );
+
+CREATE  TABLE jodel.comment_jodel_user ( 
+	comment_id           integer  NOT NULL  ,
+	username             varchar(100)  NOT NULL  ,
+	vote_type            integer  NOT NULL  ,
+	CONSTRAINT pk_comment_user_vote_comment_id_username PRIMARY KEY ( comment_id, username )
+ );
+
+ALTER TABLE jodel."comment" ADD CONSTRAINT fk_comment_comment_id FOREIGN KEY ( parent_comment_id ) REFERENCES jodel."comment"( id );
+
+ALTER TABLE jodel."comment" ADD CONSTRAINT fk_comment_post_id FOREIGN KEY ( post_id ) REFERENCES jodel.post( id );
+
+ALTER TABLE jodel.comment_jodel_user ADD CONSTRAINT fk_comment_jodel_user_comment_comment_id FOREIGN KEY ( comment_id ) REFERENCES jodel."comment"( id );
+
+ALTER TABLE jodel.comment_jodel_user ADD CONSTRAINT fk_comment_jodel_user_jodel_user_username FOREIGN KEY ( username ) REFERENCES jodel.jodel_user( username );
+
+ALTER TABLE jodel.post ADD CONSTRAINT fk_post_user_username FOREIGN KEY ( username ) REFERENCES jodel.jodel_user( username );
+
+ALTER TABLE jodel.post_jodel_user ADD CONSTRAINT fk_post_jodel_user_post_post_id FOREIGN KEY ( post_id ) REFERENCES jodel.post( id );
+
+ALTER TABLE jodel.post_jodel_user ADD CONSTRAINT fk_post_jodel_user_jodel_user_username FOREIGN KEY ( username ) REFERENCES jodel.jodel_user( username );
+
+COMMENT ON COLUMN jodel.post.content IS 'The content of the post. This is a text.';
+
+COMMENT ON COLUMN jodel.post.location_latitude IS 'Latitude of the location, where the post was made from.';
+
+COMMENT ON COLUMN jodel.post.location_longitude IS 'Latitude of the location, where the post was made from.';
+
+COMMENT ON COLUMN jodel.post.username IS 'Creator of the post, the user identified by the unique username.';
+
+COMMENT ON TABLE jodel.post_jodel_user IS 'All votes of users on a post.';
+
+COMMENT ON COLUMN jodel.post_jodel_user.vote_type IS 'Enum ''UP'' or ''DOWN''';
+
+COMMENT ON TABLE jodel."comment" IS 'A comment can be made on posts or other comments by users.';
+
+COMMENT ON COLUMN jodel."comment".parent_comment_id IS 'This can be null. If it is not null, the comment is a sub-comment of another comment.';
+
+COMMENT ON COLUMN jodel."comment".post_id IS 'Each comment is connected to one post, identified by the post_id.';
+
+COMMENT ON TABLE jodel.comment_jodel_user IS 'All votes of users on a post.';
+
+COMMENT ON COLUMN jodel.comment_jodel_user.vote_type IS 'Enum ''UP'' or ''DOWN''';
+]]></string>
+		</script>
+		<script name="SQL_Editor_006" id="Editor-927" language="SQL" >
+			<string><![CDATA[CREATE SCHEMA IF NOT EXISTS jodel;
+
+CREATE  TABLE jodel.jodel_user ( 
+	username             varchar(100)  NOT NULL  ,
+	CONSTRAINT pk_user_username PRIMARY KEY ( username )
+ );
+
+CREATE  TABLE jodel.post ( 
+	id                   integer  NOT NULL  ,
+	content              varchar(1000)  NOT NULL  ,
+	location_latitude    double precision  NOT NULL  ,
+	location_longitude   double precision  NOT NULL  ,
+	username             varchar(100)  NOT NULL  ,
+	CONSTRAINT pk_post_id PRIMARY KEY ( id )
+ );
+
+CREATE  TABLE jodel.post_jodel_user ( 
+	post_id              integer  NOT NULL  ,
+	username             varchar(100)  NOT NULL  ,
+	vote_type            integer  NOT NULL  ,
+	CONSTRAINT pk_post_user_vote_post_id_username PRIMARY KEY ( post_id, username )
+ );
+
+CREATE  TABLE jodel.jodel_comment ( 
+	id                   integer  NOT NULL  ,
+	parent_comment_id    integer  NOT NULL  ,
+	post_id              integer  NOT NULL  ,
+	CONSTRAINT pk_comment_id PRIMARY KEY ( id, parent_comment_id, post_id )
+ );
+
+CREATE UNIQUE INDEX unq_id ON jodel.jodel_comment ( id );
+
+CREATE  TABLE jodel.comment_jodel_user ( 
+	jodel_comment_id     integer  NOT NULL  ,
+	username             varchar(100)  NOT NULL  ,
+	vote_type            integer  NOT NULL  ,
+	CONSTRAINT pk_comment_user_vote_comment_id_username PRIMARY KEY ( jodel_comment_id, username )
+ );
+
+ALTER TABLE jodel.comment_jodel_user ADD CONSTRAINT fk_jodel_comment_jodel_user_jodel_comment_jodel_comment_id FOREIGN KEY ( jodel_comment_id ) REFERENCES jodel.jodel_comment( id );
+
+ALTER TABLE jodel.comment_jodel_user ADD CONSTRAINT fk_comment_jodel_user_jodel_user_username FOREIGN KEY ( username ) REFERENCES jodel.jodel_user( username );
+
+ALTER TABLE jodel.jodel_comment ADD CONSTRAINT fk_jodel_comment_jodel_comment_id FOREIGN KEY ( parent_comment_id ) REFERENCES jodel.jodel_comment( id );
+
+ALTER TABLE jodel.jodel_comment ADD CONSTRAINT fk_jodel_comment_post_id FOREIGN KEY ( post_id ) REFERENCES jodel.post( id );
+
+ALTER TABLE jodel.post ADD CONSTRAINT fk_post_user_username FOREIGN KEY ( username ) REFERENCES jodel.jodel_user( username );
+
+ALTER TABLE jodel.post_jodel_user ADD CONSTRAINT fk_post_jodel_user_post_post_id FOREIGN KEY ( post_id ) REFERENCES jodel.post( id );
+
+ALTER TABLE jodel.post_jodel_user ADD CONSTRAINT fk_post_jodel_user_jodel_user_username FOREIGN KEY ( username ) REFERENCES jodel.jodel_user( username );
+
+COMMENT ON COLUMN jodel.post.content IS 'The content of the post. This is a text.';
+
+COMMENT ON COLUMN jodel.post.location_latitude IS 'Latitude of the location, where the post was made from.';
+
+COMMENT ON COLUMN jodel.post.location_longitude IS 'Latitude of the location, where the post was made from.';
+
+COMMENT ON COLUMN jodel.post.username IS 'Creator of the post, the user identified by the unique username.';
+
+COMMENT ON TABLE jodel.post_jodel_user IS 'All votes of users on a post.';
+
+COMMENT ON COLUMN jodel.post_jodel_user.vote_type IS 'Enum ''UP'' or ''DOWN''';
+
+COMMENT ON TABLE jodel.jodel_comment IS 'A comment can be made on posts or other comments by users.';
+
+COMMENT ON COLUMN jodel.jodel_comment.parent_comment_id IS 'This can be null. If it is not null, the comment is a sub-comment of another comment.';
+
+COMMENT ON COLUMN jodel.jodel_comment.post_id IS 'Each comment is connected to one post, identified by the post_id.';
+
+COMMENT ON TABLE jodel.comment_jodel_user IS 'All votes of users on a post.';
+
+COMMENT ON COLUMN jodel.comment_jodel_user.vote_type IS 'Enum ''UP'' or ''DOWN''';
+]]></string>
+		</script>
+		<script name="SQL_Editor_007" id="Editor-a39" language="SQL" >
+			<string><![CDATA[CREATE SCHEMA IF NOT EXISTS jodel;
+
+CREATE  TABLE jodel.barbarian ( 
+	username             varchar(100)  NOT NULL  ,
+	CONSTRAINT pk_user_username PRIMARY KEY ( username )
+ );
+
+CREATE  TABLE jodel.post ( 
+	id                   integer  NOT NULL  ,
+	content              varchar(1000)  NOT NULL  ,
+	location_latitude    double precision  NOT NULL  ,
+	location_longitude   double precision  NOT NULL  ,
+	username             varchar(100)  NOT NULL  ,
+	CONSTRAINT pk_post_id PRIMARY KEY ( id )
+ );
+
+CREATE  TABLE jodel.post_barbarian ( 
+	post_id              integer  NOT NULL  ,
+	username             varchar(100)  NOT NULL  ,
+	vote_type            integer  NOT NULL  ,
+	CONSTRAINT pk_post_user_vote_post_id_username PRIMARY KEY ( post_id, username )
+ );
+
+CREATE  TABLE jodel.jodel ( 
+	id                   integer  NOT NULL  ,
+	parent_jodel_id      integer  NOT NULL  ,
+	post_id              integer  NOT NULL  ,
+	CONSTRAINT pk_comment_id PRIMARY KEY ( id, parent_jodel_id, post_id )
+ );
+
+CREATE UNIQUE INDEX unq_id ON jodel.jodel ( id );
+
+CREATE  TABLE jodel.jodel_barbarian ( 
+	jodel_id             integer  NOT NULL  ,
+	username             varchar(100)  NOT NULL  ,
+	vote_type            integer  NOT NULL  ,
+	CONSTRAINT pk_comment_user_vote_comment_id_username PRIMARY KEY ( jodel_id, username )
+ );
+
+ALTER TABLE jodel.jodel ADD CONSTRAINT fk_jodel_jodel_id FOREIGN KEY ( parent_jodel_id ) REFERENCES jodel.jodel( id );
+
+ALTER TABLE jodel.jodel ADD CONSTRAINT fk_jodel_post_id FOREIGN KEY ( post_id ) REFERENCES jodel.post( id );
+
+ALTER TABLE jodel.jodel_barbarian ADD CONSTRAINT fk_jodel_jodleror_jodel_jodel_id FOREIGN KEY ( jodel_id ) REFERENCES jodel.jodel( id );
+
+ALTER TABLE jodel.jodel_barbarian ADD CONSTRAINT fk_jodel_jodleror_jodleror_username FOREIGN KEY ( username ) REFERENCES jodel.barbarian( username );
+
+ALTER TABLE jodel.post ADD CONSTRAINT fk_post_user_username FOREIGN KEY ( username ) REFERENCES jodel.barbarian( username );
+
+ALTER TABLE jodel.post_barbarian ADD CONSTRAINT fk_post_barbarian_post_post_id FOREIGN KEY ( post_id ) REFERENCES jodel.post( id );
+
+ALTER TABLE jodel.post_barbarian ADD CONSTRAINT fk_post_barbarian_barbarian_username FOREIGN KEY ( username ) REFERENCES jodel.barbarian( username );
+
+COMMENT ON TABLE jodel.barbarian IS 'Barbarians are users of the app.';
+
+COMMENT ON COLUMN jodel.post.content IS 'The content of the post. This is a text.';
+
+COMMENT ON COLUMN jodel.post.location_latitude IS 'Latitude of the location, where the post was made from.';
+
+COMMENT ON COLUMN jodel.post.location_longitude IS 'Latitude of the location, where the post was made from.';
+
+COMMENT ON COLUMN jodel.post.username IS 'Creator of the post, the user identified by the unique username.';
+
+COMMENT ON TABLE jodel.post_barbarian IS 'All votes of barbarians aka users on a post.';
+
+COMMENT ON COLUMN jodel.post_barbarian.vote_type IS 'Enum ''UP'' or ''DOWN''';
+
+COMMENT ON TABLE jodel.jodel IS 'A jodel (aka comment) can be made on posts or other jodels by barbarians aka users.';
+
+COMMENT ON COLUMN jodel.jodel.parent_jodel_id IS 'This can be null. If it is not null, the jodel is a sub-jodel of another jodel.';
+
+COMMENT ON COLUMN jodel.jodel.post_id IS 'Each jodel is connected to one post, identified by the post_id.';
+
+COMMENT ON TABLE jodel.jodel_barbarian IS 'All votes of barbarians (users) on a post.';
+
+COMMENT ON COLUMN jodel.jodel_barbarian.vote_type IS 'Enum ''UP'' or ''DOWN''';
+]]></string>
+		</script>
+		<script name="SQL_Editor_008" id="Editor-1ab8" language="SQL" >
+			<string><![CDATA[CREATE SCHEMA IF NOT EXISTS jodel;
+
+CREATE  TABLE jodel.barbarian ( 
+	username             varchar(100)  NOT NULL  ,
+	CONSTRAINT pk_user_username PRIMARY KEY ( username )
+ );
+
+CREATE  TABLE jodel.post ( 
+	id                   integer  NOT NULL  ,
+	content              varchar(1000)  NOT NULL  ,
+	location_latitude    double precision  NOT NULL  ,
+	location_longitude   double precision  NOT NULL  ,
+	username             varchar(100)  NOT NULL  ,
+	CONSTRAINT pk_post_id PRIMARY KEY ( id )
+ );
+
+CREATE  TABLE jodel.post_barbarian ( 
+	post_id              integer  NOT NULL  ,
+	username             varchar(100)  NOT NULL  ,
+	vote_type            integer  NOT NULL  ,
+	CONSTRAINT pk_post_user_vote_post_id_username PRIMARY KEY ( post_id, username )
+ );
+
+CREATE  TABLE jodel.jodel ( 
+	id                   integer  NOT NULL  ,
+	parent_jodel_id      integer  NOT NULL  ,
+	post_id              integer  NOT NULL  ,
+	CONSTRAINT pk_comment_id PRIMARY KEY ( id, parent_jodel_id, post_id )
+ );
+
+CREATE UNIQUE INDEX unq_id ON jodel.jodel ( id );
+
+CREATE  TABLE jodel.jodel_barbarian ( 
+	jodel_id             integer  NOT NULL  ,
+	username             varchar(100)  NOT NULL  ,
+	vote_type            integer  NOT NULL  ,
+	CONSTRAINT pk_comment_user_vote_comment_id_username PRIMARY KEY ( jodel_id, username )
+ );
+
+ALTER TABLE jodel.jodel ADD CONSTRAINT fk_jodel_jodel_id FOREIGN KEY ( parent_jodel_id ) REFERENCES jodel.jodel( id );
+
+ALTER TABLE jodel.jodel ADD CONSTRAINT fk_jodel_post_id FOREIGN KEY ( post_id ) REFERENCES jodel.post( id );
+
+ALTER TABLE jodel.jodel_barbarian ADD CONSTRAINT fk_jodel_jodleror_jodel_jodel_id FOREIGN KEY ( jodel_id ) REFERENCES jodel.jodel( id );
+
+ALTER TABLE jodel.jodel_barbarian ADD CONSTRAINT fk_jodel_jodleror_jodleror_username FOREIGN KEY ( username ) REFERENCES jodel.barbarian( username );
+
+ALTER TABLE jodel.post ADD CONSTRAINT fk_post_user_username FOREIGN KEY ( username ) REFERENCES jodel.barbarian( username );
+
+ALTER TABLE jodel.post_barbarian ADD CONSTRAINT fk_post_barbarian_post_post_id FOREIGN KEY ( post_id ) REFERENCES jodel.post( id );
+
+ALTER TABLE jodel.post_barbarian ADD CONSTRAINT fk_post_barbarian_barbarian_username FOREIGN KEY ( username ) REFERENCES jodel.barbarian( username );
+
+COMMENT ON TABLE jodel.barbarian IS 'Barbarians are users of the app.';
+
+COMMENT ON COLUMN jodel.post.content IS 'The content of the post. This is a text.';
+
+COMMENT ON COLUMN jodel.post.location_latitude IS 'Latitude of the location, where the post was made from.';
+
+COMMENT ON COLUMN jodel.post.location_longitude IS 'Latitude of the location, where the post was made from.';
+
+COMMENT ON COLUMN jodel.post.username IS 'Creator of the post, the user identified by the unique username.';
+
+COMMENT ON TABLE jodel.post_barbarian IS 'All votes of barbarians aka users on a post.';
+
+COMMENT ON COLUMN jodel.post_barbarian.vote_type IS 'Enum ''UP'' or ''DOWN''';
+
+COMMENT ON TABLE jodel.jodel IS 'A jodel (aka comment) can be made on posts or other jodels by barbarians aka users.';
+
+COMMENT ON COLUMN jodel.jodel.parent_jodel_id IS 'This can be null. If it is not null, the jodel is a sub-jodel of another jodel.';
+
+COMMENT ON COLUMN jodel.jodel.post_id IS 'Each jodel is connected to one post, identified by the post_id.';
+
+COMMENT ON TABLE jodel.jodel_barbarian IS 'All votes of barbarians (users) on a post.';
+
+COMMENT ON COLUMN jodel.jodel_barbarian.vote_type IS 'Enum ''UP'' or ''DOWN''';
+]]></string>
+		</script>
+	</layout>
+</project>

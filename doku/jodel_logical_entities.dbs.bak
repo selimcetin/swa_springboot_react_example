@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<project name="Jodel" database="LogicalDesign" id="LogicalDesign-120e" >
+	<comment><![CDATA[Softwarearchitecture Labor HS Esslingen]]></comment>
+	<schema name="Jodel" >
+		<table name="comment" prior="Entity" >
+			<comment><![CDATA[A comment can be made on posts or other comments by users.]]></comment>
+			<column name="id" type="INT" jt="4" mandatory="y" />
+			<column name="parent_comment_id" type="INT" jt="4" mandatory="y" >
+				<comment><![CDATA[This can be null. If it is not null, the comment is a sub-comment of another comment.]]></comment>
+			</column>
+			<column name="post_id" type="INT" jt="4" mandatory="y" >
+				<comment><![CDATA[Each comment is connected to one post, identified by the post_id.]]></comment>
+			</column>
+			<index name="pk_comment_id" unique="PRIMARY_KEY" >
+				<column name="id" />
+			</index>
+			<fk name="fk_comment_comment_id" to_schema="Jodel" to_table="comment" type="Identifying" mandatory="y" cardinality="ZeroMore" range_from="0" range_to="0" >
+				<fk_column name="parent_comment_id" pk="id" />
+			</fk>
+			<fk name="fk_comment_post_id" to_schema="Jodel" to_table="post" type="Identifying" mandatory="y" cardinality="ZeroMore" range_from="0" range_to="0" >
+				<fk_column name="post_id" pk="id" />
+			</fk>
+		</table>
+		<table name="comment_user_vote" prior="comment_user_votes" >
+			<comment><![CDATA[All votes of users on a post.]]></comment>
+			<column name="comment_id" type="INT" jt="4" mandatory="y" />
+			<column name="username" type="VARCHAR" length="100" jt="12" mandatory="y" />
+			<column name="vote_type" type="VARCHAR" length="111" jt="12" mandatory="y" />
+			<index name="pk_comment_user_vote_comment_id_username" unique="PRIMARY_KEY" >
+				<column name="comment_id" />
+				<column name="username" />
+			</index>
+			<fk name="fk_comment_user_vote_comment_comment_id" to_schema="Jodel" to_table="comment" type="Identifying" mandatory="y" cardinality="ZeroMore" range_from="0" range_to="0" >
+				<fk_column name="comment_id" pk="id" />
+			</fk>
+			<fk name="fk_post_user_vote_user_username" to_schema="Jodel" to_table="post" type="Identifying" mandatory="y" cardinality="ZeroMore" range_from="0" range_to="0" >
+				<fk_column name="username" pk="username" />
+			</fk>
+			<fk name="fk_comment_user_vote_vote_type" to_schema="Jodel" to_table="vote" type="Identifying" mandatory="y" cardinality="ZeroMore" range_from="0" range_to="0" >
+				<fk_column name="vote_type" pk="type" />
+			</fk>
+		</table>
+		<table name="post" prior="Entity" >
+			<column name="id" type="INT" jt="4" mandatory="y" />
+			<column name="content" type="VARCHAR" length="1000" jt="12" mandatory="y" >
+				<comment><![CDATA[The content of the post. This is a text.]]></comment>
+			</column>
+			<column name="location_latitude" type="DOUBLE" jt="8" mandatory="y" >
+				<comment><![CDATA[Latitude of the location, where the post was made from.]]></comment>
+			</column>
+			<column name="location_longitude" type="DOUBLE" jt="8" mandatory="y" >
+				<comment><![CDATA[Latitude of the location, where the post was made from.]]></comment>
+			</column>
+			<column name="username" type="VARCHAR" length="100" jt="12" mandatory="y" >
+				<comment><![CDATA[Creator of the post, the user identified by the unique username.]]></comment>
+			</column>
+			<index name="pk_post_id" unique="PRIMARY_KEY" >
+				<column name="id" />
+			</index>
+			<index name="unq_username" unique="UNIQUE_INDEX" >
+				<column name="username" />
+			</index>
+			<fk name="fk_post_user_username" to_schema="Jodel" to_table="user" type="Identifying" mandatory="y" cardinality="ZeroMore" range_from="0" range_to="0" >
+				<fk_column name="username" pk="username" />
+			</fk>
+		</table>
+		<table name="post_user_vote" prior="Entity_0" >
+			<comment><![CDATA[All votes of users on a post.]]></comment>
+			<column name="post_id" type="INT" jt="4" mandatory="y" />
+			<column name="username" type="VARCHAR" length="100" jt="12" mandatory="y" />
+			<column name="vote_type" type="VARCHAR" jt="12" mandatory="y" >
+				<comment><![CDATA[Either up- or downvote.]]></comment>
+			</column>
+			<index name="pk_post_user_vote_post_id_username" unique="PRIMARY_KEY" >
+				<column name="post_id" />
+				<column name="username" />
+			</index>
+			<fk name="fk_post_user_vote_post_id" to_schema="Jodel" to_table="post" type="Identifying" mandatory="y" cardinality="ZeroMore" range_from="0" range_to="0" >
+				<fk_column name="post_id" pk="id" />
+			</fk>
+			<fk name="fk_post_user_vote_username" to_schema="Jodel" to_table="user" type="Identifying" mandatory="y" cardinality="ZeroMore" range_from="0" range_to="0" >
+				<fk_column name="username" pk="username" />
+			</fk>
+			<fk name="fk_post_user_vote_vote" to_schema="Jodel" to_table="vote" type="Identifying" mandatory="y" cardinality="ZeroMore" range_from="0" range_to="0" >
+				<fk_column name="vote_type" pk="type" />
+			</fk>
+		</table>
+		<table name="user" prior="Entity" >
+			<column name="username" type="VARCHAR" length="100" jt="12" mandatory="y" />
+			<index name="pk_user_username" unique="PRIMARY_KEY" >
+				<column name="username" />
+			</index>
+		</table>
+		<table name="vote" prior="Entity" >
+			<comment><![CDATA[Votes can be made on posts or comments. Either up- or downvote.]]></comment>
+			<column name="type" type="ENUM" jt="12" >
+				<enumeration><![CDATA['up', 'down']]></enumeration>
+				<comment><![CDATA[Type of vote, either up- or downvote.]]></comment>
+			</column>
+			<index name="pk_type" unique="UNIQUE_KEY" >
+				<column name="type" />
+			</index>
+			<index name="pk_type_001" unique="UNIQUE_KEY" >
+				<column name="type" />
+			</index>
+		</table>
+	</schema>
+	<layout name="Default Layout" id="Layout-52" show_relation="columns" >
+		<entity schema="Jodel" name="comment" color="C1D8EE" x="208" y="352" />
+		<entity schema="Jodel" name="comment_user_vote" color="C1D8EE" x="720" y="512" />
+		<entity schema="Jodel" name="post" color="C1D8EE" x="48" y="48" />
+		<entity schema="Jodel" name="post_user_vote" color="C1D8EE" x="608" y="128" />
+		<entity schema="Jodel" name="user" color="C1D8EE" x="384" y="48" />
+		<entity schema="Jodel" name="vote" color="C1D8EE" x="544" y="336" />
+	</layout>
+</project>

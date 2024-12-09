@@ -32,10 +32,10 @@ export class PostController {
     }
   }
 
-  static async createPost(newPost: { 
-    content: string; 
-    barbarian: { username: string }; 
-    location: { longitude: number; latitude: number } 
+  static async createPost(newPost: {
+    content: string;
+    barbarian: { username: string };
+    location: { longitude: number; latitude: number };
   }): Promise<Post> {
     console.log("Payload being sent to the backend:", newPost);
 

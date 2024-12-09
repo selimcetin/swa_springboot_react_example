@@ -32,6 +32,8 @@ dependencies {
 	implementation 'com.fasterxml.jackson.core:jackson-core:2.18.1'
 	implementation 'com.fasterxml.jackson.core:jackson-databind:2.18.1'
 	implementation 'org.locationtech.jts:jts-modules:1.20.0'
+	implementation 'org.keycloak:keycloak-spring-boot-starter:22.0.0'
+	implementation 'org.keycloak:keycloak-spring-security-adapter:22.0.0'
 }
 
 /*

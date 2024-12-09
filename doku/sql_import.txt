@@ -1,0 +1,75 @@
+CREATE SCHEMA IF NOT EXISTS jodel;
+
+CREATE TYPE vote_type AS ENUM ('UP', 'DOWN');
+
+CREATE  TABLE jodel.barbarian ( 
+	username             varchar(100)  NOT NULL  ,
+	CONSTRAINT pk_user_username PRIMARY KEY ( username )
+ );
+
+CREATE  TABLE jodel.post ( 
+	id                   integer  NOT NULL  ,
+	content              varchar(1000)  NOT NULL  ,
+	location    geography(POINT, 4326)  NOT NULL  ,
+	username             varchar(100)  NOT NULL  ,
+	CONSTRAINT pk_post_id PRIMARY KEY ( id )
+ );
+
+CREATE  TABLE jodel.post_barbarian ( 
+	post_id              integer  NOT NULL  ,
+	username             varchar(100)  NOT NULL  ,
+	vote_type            vote_type  NOT NULL  ,
+	CONSTRAINT pk_post_user_vote_post_id_username PRIMARY KEY ( post_id, username )
+ );
+
+CREATE  TABLE jodel.jodel ( 
+	id                   integer  NOT NULL  ,
+	parent_jodel_id      integer  NOT NULL  ,
+	post_id              integer  NOT NULL  ,
+	CONSTRAINT pk_comment_id PRIMARY KEY ( id, parent_jodel_id, post_id )
+ );
+
+CREATE UNIQUE INDEX unq_id ON jodel.jodel ( id );
+
+CREATE  TABLE jodel.jodel_barbarian ( 
+	jodel_id             integer  NOT NULL  ,
+	username             varchar(100)  NOT NULL  ,
+	vote_type            vote_type  NOT NULL  ,
+	CONSTRAINT pk_comment_user_vote_comment_id_username PRIMARY KEY ( jodel_id, username )
+ );
+
+ALTER TABLE jodel.jodel ADD CONSTRAINT fk_jodel_jodel_id FOREIGN KEY ( parent_jodel_id ) REFERENCES jodel.jodel( id );
+
+ALTER TABLE jodel.jodel ADD CONSTRAINT fk_jodel_post_id FOREIGN KEY ( post_id ) REFERENCES jodel.post( id );
+
+ALTER TABLE jodel.jodel_barbarian ADD CONSTRAINT fk_jodel_jodleror_jodel_jodel_id FOREIGN KEY ( jodel_id ) REFERENCES jodel.jodel( id );
+
+ALTER TABLE jodel.jodel_barbarian ADD CONSTRAINT fk_jodel_jodleror_jodleror_username FOREIGN KEY ( username ) REFERENCES jodel.barbarian( username );
+
+ALTER TABLE jodel.post ADD CONSTRAINT fk_post_user_username FOREIGN KEY ( username ) REFERENCES jodel.barbarian( username );
+
+ALTER TABLE jodel.post_barbarian ADD CONSTRAINT fk_post_barbarian_post_post_id FOREIGN KEY ( post_id ) REFERENCES jodel.post( id );
+
+ALTER TABLE jodel.post_barbarian ADD CONSTRAINT fk_post_barbarian_barbarian_username FOREIGN KEY ( username ) REFERENCES jodel.barbarian( username );
+
+COMMENT ON TABLE jodel.barbarian IS 'Barbarians are users of the app.';
+
+COMMENT ON COLUMN jodel.post.content IS 'The content of the post. This is a text.';
+
+COMMENT ON COLUMN jodel.post.location IS 'Location in SRID 4326 format, longitude and latitude.';
+
+COMMENT ON COLUMN jodel.post.username IS 'Creator of the post, the user identified by the unique username.';
+
+COMMENT ON TABLE jodel.post_barbarian IS 'All votes of barbarians aka users on a post.';
+
+COMMENT ON COLUMN jodel.post_barbarian.vote_type IS 'Enum ''UP'' or ''DOWN''';
+
+COMMENT ON TABLE jodel.jodel IS 'A jodel (aka comment) can be made on posts or other jodels by barbarians aka users.';
+
+COMMENT ON COLUMN jodel.jodel.parent_jodel_id IS 'This can be null. If it is not null, the jodel is a sub-jodel of another jodel.';
+
+COMMENT ON COLUMN jodel.jodel.post_id IS 'Each jodel is connected to one post, identified by the post_id.';
+
+COMMENT ON TABLE jodel.jodel_barbarian IS 'All votes of barbarians (users) on a post.';
+
+COMMENT ON COLUMN jodel.jodel_barbarian.vote_type IS 'Enum ''UP'' or ''DOWN''';

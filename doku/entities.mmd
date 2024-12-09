@@ -1,0 +1,27 @@
+---
+title: Jodel App Database entities
+---
+classDiagram
+    Barbarian "1" -- "*" Jodel
+    Barbarian "1" -- "*" Post
+    Post "1" -- "*" Jodel
+    Jodel "1" -- "*" Jodel
+
+    Barbarian : "-String username"
+
+    Post : -Long id
+    Post : -String content
+    Post : -Point location
+    Post : -Barbarian barbarian
+    Post : -List<Jodel> jodels
+    Post : +getPostId() long
+    Post : +getUpVoteCount() int
+    Post : +getDownVoteCount() int
+
+    Jodel : -Long id
+    Jodel : -Jodel parentJodel
+    Jodel : -List<Jodel> childJodels
+    Jodel : -Post post
+    Jodel : -String content
+    Jodel : +getUpVoteCount() int
+    Jodel : +getDownVoteCount() int
