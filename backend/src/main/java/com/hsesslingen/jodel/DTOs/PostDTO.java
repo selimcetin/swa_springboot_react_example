@@ -1,6 +1,7 @@
 package com.hsesslingen.jodel.DTOs;
 
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.hsesslingen.jodel.entities.Barbarian;
 import com.hsesslingen.jodel.serializers.PointSerializer;
 import lombok.Getter;
 import lombok.Setter;
@@ -15,7 +16,7 @@ public class PostDTO {
 
     @JsonSerialize(using = PointSerializer.class)
     private Point location;
-    private String barbarianUsername;
+    private Barbarian barbarian;
     private int upvotes;
     private int downvotes;
     private List<Long> jodelIdList;

@@ -1,42 +1,25 @@
 import { useEffect, useState } from "react";
 import "./App.css";
-import { Post } from "./data/classes/Post";
-import { PostController } from "./controllers/PostController";
-import "./components/CreatePostForm.css";
 import { useKeycloak } from "@react-keycloak/web";
+import PostList from "./components/PostList";
+import CreatePostForm from "./components/CreatePostForm";
+import { setAuthToken } from "./services/PostService";
 
 function App() {
-  const [posts, setPosts] = useState<Post[]>([]);
-  const [error, setError] = useState<string | null>(null);
-  const [loading, setLoading] = useState<boolean>(true);
-
   const { keycloak, initialized } = useKeycloak();
 
   useEffect(() => {
     if (!initialized) return;
-
-    (async () => {
-      try {
-        const fetchedPosts = await PostController.fetchPosts();
-        setPosts(fetchedPosts);
-      } catch (err) {
-        setError("Failed to load posts");
-      } finally {
-        setLoading(false);
-      }
-    })();
   }, [initialized]);
+
+  useEffect(() => {
+    if (keycloak.authenticated && keycloak.token) {
+      setAuthToken(keycloak.token);
+    }
+  }, [keycloak.authenticated, keycloak.token]);
 
   if (!initialized) {
     return <div>Loading Keycloak...</div>;
-  }
-
-  if (loading) {
-    return <div>Loading...</div>;
-  }
-
-  if (error) {
-    return <div>{error}</div>;
   }
 
   return (
@@ -45,33 +28,12 @@ function App() {
         <>
           <h1>Welcome, {keycloak.tokenParsed?.preferred_username}!</h1>
           <button onClick={() => keycloak.logout()}>Logout</button>
+          <CreatePostForm username={keycloak.tokenParsed?.preferred_username} />
+          <PostList />
         </>
       ) : (
         <button onClick={() => keycloak.login()}>Login</button>
       )}
-      <h1 className="header">Post List</h1>
-      <div className="post-list">
-        {posts.length > 0 ? (
-          posts.map((post) => (
-            <div className="post-card" key={post.id}>
-              <h2 className="post-content">{post.content}</h2>
-              <p className="post-location">
-                Location: {post.location.latitude}, {post.location.longitude}
-              </p>
-              <p className="post-username">
-                Username: {post.barbarianUsername}
-              </p>
-              <p className="post-upvotes">Upvotes: {post.upvotes}</p>
-              <p className="post-downvotes">Downvotes: {post.downvotes}</p>
-              <p className="post-jodel-ids">
-                Jodel IDs: {(post.jodelIdList || []).join(", ")}
-              </p>
-            </div>
-          ))
-        ) : (
-          <p className="no-posts">No posts available.</p>
-        )}
-      </div>
     </div>
   );
 }

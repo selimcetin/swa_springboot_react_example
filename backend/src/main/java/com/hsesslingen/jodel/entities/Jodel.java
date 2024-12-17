@@ -1,10 +1,11 @@
 package com.hsesslingen.jodel.entities;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
+
+import java.util.Collections;
 import java.util.List;
 
 @Entity
@@ -24,16 +25,20 @@ public class Jodel {
     private List<Jodel> childJodels;
 
     @ManyToOne
-    @JoinColumn(name = "post_id")
+    @JoinColumn(name = "post_id", nullable = false)
     private Post post;
+
+    @ManyToOne
+    @JoinColumn(name = "username", referencedColumnName = "username", nullable = false)
+    private Barbarian barbarian;
 
     @JsonProperty("post_id")
     public Long getPostId() {
-        return post != null ? post.getId() : null;
+        return post.getId();
     }
 
     @OneToMany(mappedBy = "jodel", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<JodelBarbarian> votes;
+    private List<JodelBarbarian> votes = Collections.emptyList();
 
     private String content;
 

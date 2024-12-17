@@ -8,22 +8,19 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class BarbarianService {
-    
     @Autowired
     private BarbarianRepository barbarianRepository;
 
-    public Barbarian getBarbarianById(String username) {
-    return barbarianRepository.findById(username)
-        .orElseThrow(() -> new EntityIdNotFoundException(username, "Barbarian"));
+    public Barbarian getBarbarianById(String username){
+        return barbarianRepository.findById(username).orElseThrow(() -> new EntityIdNotFoundException(username, "Barbarian"));
     }
 
-    public Barbarian getDefaultBarbarian() {
-        // Fetch a default Barbarian by username or create a new one
-        return barbarianRepository.findById("default_user")
+    public Barbarian getOrCreateBarbarian(String username) {
+        return barbarianRepository.findById(username)
                 .orElseGet(() -> {
-                    Barbarian defaultBarbarian = new Barbarian();
-                    defaultBarbarian.setUsername("default_user");
-                    return barbarianRepository.save(defaultBarbarian);
+                    Barbarian newBarbarian = new Barbarian();
+                    newBarbarian.setUsername(username);
+                    return barbarianRepository.save(newBarbarian);
                 });
     }
 }

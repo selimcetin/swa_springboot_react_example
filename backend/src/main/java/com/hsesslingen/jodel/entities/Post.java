@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.hsesslingen.jodel.serializers.PointDeserializer;
 import com.hsesslingen.jodel.serializers.PointSerializer;
+import jakarta.annotation.Nullable;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -31,7 +32,7 @@ public class Post {
     private Point location;
 
     @ManyToOne
-    @JoinColumn(name = "username", referencedColumnName = "username")
+    @JoinColumn(name = "username", referencedColumnName = "username", nullable = false)
     private Barbarian barbarian;
 
     @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
@@ -41,17 +42,16 @@ public class Post {
     private List<PostBarbarian> votes = new ArrayList<>();
 
     @JsonProperty("upvotes")
-public int getUpVoteCount() {
-    return votes.stream()
-            .mapToInt(vote -> vote.getVoteType() == VoteType.UP ? 1 : 0)
-            .sum();
-}
+    public int getUpVoteCount() {
+        return votes.stream()
+                .mapToInt(vote -> vote.getVoteType() == VoteType.UP ? 1 : 0)
+                .sum();
+    }
 
-@JsonProperty("downvotes")
-public int getDownVoteCount() {
-    return votes.stream()
-            .mapToInt(vote -> vote.getVoteType() == VoteType.DOWN ? 1 : 0)
-            .sum();
-}
-
+    @JsonProperty("downvotes")
+    public int getDownVoteCount() {
+        return votes.stream()
+                .mapToInt(vote -> vote.getVoteType() == VoteType.DOWN ? 1 : 0)
+                .sum();
+    }
 }

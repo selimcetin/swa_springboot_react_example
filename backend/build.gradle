@@ -3,8 +3,6 @@ plugins {
 	id 'org.springframework.boot' version '3.3.5'
 	id 'io.spring.dependency-management' version '1.1.6'
 	id "io.freefair.lombok" version "8.10.2"
-	id 'application'
-
 }
 
 group = 'com.hsesslingen'
@@ -25,22 +23,18 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-web'
 	implementation 'org.postgresql:postgresql:42.6.0'
 	implementation 'org.hibernate:hibernate-spatial:6.6.2.Final'
-	//developmentOnly 'org.springframework.boot:spring-boot-devtools'
+	developmentOnly 'org.springframework.boot:spring-boot-devtools'
 	runtimeOnly 'org.postgresql:postgresql:42.6.0'
-	//testImplementation 'org.springframework.boot:spring-boot-starter-test'
-	//testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+	testImplementation 'org.springframework.boot:spring-boot-starter-test'
+	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 	implementation 'com.fasterxml.jackson.core:jackson-core:2.18.1'
 	implementation 'com.fasterxml.jackson.core:jackson-databind:2.18.1'
 	implementation 'org.locationtech.jts:jts-modules:1.20.0'
-	implementation 'org.keycloak:keycloak-spring-boot-starter:22.0.0'
-	implementation 'org.keycloak:keycloak-spring-security-adapter:22.0.0'
+	implementation 'org.springframework.boot:spring-boot-starter-oauth2-resource-server'
+	implementation 'org.springframework.security:spring-security-oauth2-jose'
+	implementation 'org.springframework.boot:spring-boot-starter-security'
 }
 
-/*
 tasks.named('test') {
 	useJUnitPlatform()
-}*/
-
-application {
-    mainClass = 'com.hsesslingen.jodel.JodelApplication' // Replace with your actual main class
 }
