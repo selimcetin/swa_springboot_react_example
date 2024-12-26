@@ -4,6 +4,7 @@ import { useKeycloak } from "@react-keycloak/web";
 import PostList from "./components/PostList";
 import CreatePostForm from "./components/CreatePostForm";
 import { setAuthToken } from "./services/PostService";
+import { PostProvider } from "./context/PostContext";
 
 function App() {
   const { keycloak, initialized } = useKeycloak();
@@ -23,18 +24,22 @@ function App() {
   }
 
   return (
-    <div className="app-container">
-      {keycloak.authenticated ? (
-        <>
-          <h1>Welcome, {keycloak.tokenParsed?.preferred_username}!</h1>
-          <button onClick={() => keycloak.logout()}>Logout</button>
-          <CreatePostForm username={keycloak.tokenParsed?.preferred_username} />
-          <PostList />
-        </>
-      ) : (
-        <button onClick={() => keycloak.login()}>Login</button>
-      )}
-    </div>
+    <PostProvider>
+      <div className="app-container">
+        {keycloak.authenticated ? (
+          <>
+            <h1>Welcome, {keycloak.tokenParsed?.preferred_username}!</h1>
+            <button onClick={() => keycloak.logout()}>Logout</button>
+            <CreatePostForm
+              username={keycloak.tokenParsed?.preferred_username}
+            />
+            <PostList />
+          </>
+        ) : (
+          <button onClick={() => keycloak.login()}>Login</button>
+        )}
+      </div>
+    </PostProvider>
   );
 }
 

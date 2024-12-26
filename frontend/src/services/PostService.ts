@@ -1,5 +1,5 @@
 import axios from "axios";
-import { Post } from "../data/classes/Post";
+import { Post } from "../types/Post";
 
 const apiClient = axios.create({
   baseURL: "/api",
@@ -8,13 +8,21 @@ const apiClient = axios.create({
   },
 });
 
-export class PostController {
-  static async fetchPosts(): Promise<Post[]> {
+export const setAuthToken = (token: string | null) => {
+  if (token) {
+    apiClient.defaults.headers.common["Authorization"] = `Bearer ${token}`;
+  } else {
+    delete apiClient.defaults.headers.common["Authorization"];
+  }
+};
+
+export class PostService {
+  static async fetchAllPosts(): Promise<Post[]> {
     try {
       const response = await apiClient.get<Post[]>("/posts");
       return response.data;
     } catch (error) {
-      PostController.handleError(error);
+      PostService.handleError(error);
       throw error;
     }
   }
@@ -24,7 +32,7 @@ export class PostController {
       const response = await apiClient.get<Post>(`/posts/${id}`);
       return response.data;
     } catch (error) {
-      PostController.handleError(error);
+      PostService.handleError(error);
       throw error;
     }
   }
@@ -34,7 +42,7 @@ export class PostController {
       const response = await apiClient.post<Post>("/posts", newPost);
       return response.data;
     } catch (error) {
-      PostController.handleError(error);
+      PostService.handleError(error);
       throw error;
     }
   }

@@ -1,5 +1,5 @@
 import axios from "axios";
-import { Jodel } from "../data/classes/Jodel";
+import { Jodel } from "../types/Jodel";
 
 const apiClient = axios.create({
   baseURL: "/api",
@@ -8,13 +8,21 @@ const apiClient = axios.create({
   },
 });
 
-export class JodelController {
+export const setAuthToken = (token: string | null) => {
+  if (token) {
+    apiClient.defaults.headers.common["Authorization"] = `Bearer ${token}`;
+  } else {
+    delete apiClient.defaults.headers.common["Authorization"];
+  }
+};
+
+export class JodelService {
   static async fetchAllJodels(): Promise<Jodel[]> {
     try {
       const response = await apiClient.get<Jodel[]>("/jodels");
       return response.data;
     } catch (error) {
-      JodelController.handleError(error);
+      JodelService.handleError(error);
       throw error;
     }
   }
@@ -24,17 +32,23 @@ export class JodelController {
       const response = await apiClient.get<Jodel>(`/jodels/${id}`);
       return response.data;
     } catch (error) {
-      JodelController.handleError(error);
+      JodelService.handleError(error);
       throw error;
     }
   }
 
-  static async createJodel(newJodel: Omit<Jodel, "id">): Promise<Jodel> {
+  static async createJodel(
+    newJodel: Omit<Jodel, "id">,
+    id: number
+  ): Promise<Jodel> {
     try {
-      const response = await apiClient.post<Jodel>("/jodels", newJodel);
+      const response = await apiClient.post<Jodel>(
+        `/jodels/post?postId=${id}`,
+        newJodel
+      );
       return response.data;
     } catch (error) {
-      JodelController.handleError(error);
+      JodelService.handleError(error);
       throw error;
     }
   }
@@ -50,7 +64,7 @@ export class JodelController {
       );
       return response.data;
     } catch (error) {
-      JodelController.handleError(error);
+      JodelService.handleError(error);
       throw error;
     }
   }
@@ -59,7 +73,7 @@ export class JodelController {
     try {
       await apiClient.delete(`/jodels/${id}`);
     } catch (error) {
-      JodelController.handleError(error);
+      JodelService.handleError(error);
       throw error;
     }
   }
@@ -75,7 +89,7 @@ export class JodelController {
       );
       return response.data;
     } catch (error) {
-      JodelController.handleError(error);
+      JodelService.handleError(error);
       throw error;
     }
   }
@@ -91,7 +105,7 @@ export class JodelController {
       );
       return response.data;
     } catch (error) {
-      JodelController.handleError(error);
+      JodelService.handleError(error);
       throw error;
     }
   }
