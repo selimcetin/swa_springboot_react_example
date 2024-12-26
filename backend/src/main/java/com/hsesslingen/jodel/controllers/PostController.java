@@ -5,6 +5,7 @@ import com.hsesslingen.jodel.entities.Barbarian;
 import com.hsesslingen.jodel.entities.Post;
 import com.hsesslingen.jodel.entities.PostBarbarian;
 import com.hsesslingen.jodel.entities.VoteType;
+import com.hsesslingen.jodel.mappers.PostMapper;
 import com.hsesslingen.jodel.repositories.BarbarianRepository;
 import com.hsesslingen.jodel.repositories.PostRepository;
 import com.hsesslingen.jodel.services.BarbarianService;
@@ -24,6 +25,9 @@ public class PostController {
     private BarbarianService barbarianService;
     @Autowired
     private PostService postService;
+
+    @Autowired
+    private PostMapper postMapper;
 
     @GetMapping
     public ResponseEntity<List<PostDTO>> getAllPosts() {
@@ -47,10 +51,11 @@ public class PostController {
     }
 
     @PostMapping
-    public ResponseEntity<Post> createPost(@RequestBody Post post) {
-
+    public ResponseEntity<PostDTO> createPost(@RequestBody Post post) {
         Post savedPost = postService.savePost(post);
-        return ResponseEntity.ok(savedPost);
+        PostDTO postDTO = postMapper.toPostDTO(savedPost);
+
+        return ResponseEntity.ok(postDTO);
     }
 
     @PostMapping("/vote")

@@ -12,6 +12,7 @@ public class JodelMapper {
         JodelDTO jodelDto = new JodelDTO();
         jodelDto.setId(jodel.getId());
         jodelDto.setParentJodelId(jodel.getParentJodel() != null ? jodel.getParentJodel().getId() : null);
+        jodelDto.setBarbarian(jodel.getBarbarian());
         if (jodel.getChildJodels() != null) {
             jodelDto.setChildJodels(jodel.getChildJodels().stream().map(Jodel::getId).toList());
         } else {
