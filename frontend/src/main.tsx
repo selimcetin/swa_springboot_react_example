@@ -1,6 +1,5 @@
 import { createRoot } from "react-dom/client";
 import { ReactKeycloakProvider } from "@react-keycloak/web";
-import { Provider } from "react-redux";
 import App from "./App.tsx";
 import keycloak from "./keycloak.tsx";
 

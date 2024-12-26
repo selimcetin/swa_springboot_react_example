@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import "./App.css";
 import { useKeycloak } from "@react-keycloak/web";
 import PostList from "./components/PostList";
